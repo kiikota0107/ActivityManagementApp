@@ -1,0 +1,56 @@
+﻿@page "/activityinput"
+@rendermode InteractiveServer
+@using ActivityManagementApp.Models
+@using ActivityManagementApp.Services
+@inject ActivityInputService _activityInputService
+@inject FindMasterServices _findMasterServices
+
+<h1>入力画面</h1>
+
+<ul style="padding:0">
+    <li style="list-style:none">
+        <span>@activityStartTime @_newActivityLogs.Category</span>
+        @if (_newActivityLogs.Category != null)
+        {
+            <button @onclick="InsertActivityLogsAsync">終了</button>
+            <button @onclick="Initialize">削除</button>
+        }
+    </li>
+</ul>
+
+@foreach (CategoryMaster categoryMaster in _categoryMasters)
+{
+    <button @onclick='() => StartActivity(categoryMaster.CategoryName)'>@categoryMaster.CategoryName</button>
+}
+
+@code {
+    private List<CategoryMaster> _categoryMasters = new List<CategoryMaster>();
+    private ActivityLogs _newActivityLogs = new ActivityLogs();
+    private string? activityStartTime = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _categoryMasters = await _findMasterServices.FindCategoryMaster();
+    }
+
+    private void Initialize()
+    {
+        _newActivityLogs = new ActivityLogs();
+        activityStartTime = null;
+    }
+
+    private void StartActivity(string? category)
+    {
+        _newActivityLogs.StartDateTime = DateTime.Now;
+        _newActivityLogs.Category = category;
+
+        activityStartTime = _newActivityLogs.StartDateTime.ToString("HH:mm");
+    }
+
+    private async Task InsertActivityLogsAsync()
+    {
+        _newActivityLogs.EndDateTime = DateTime.Now;
+        await _activityInputService.InsertActivityLogsAsync(_newActivityLogs);
+        Initialize();
+    }
+}

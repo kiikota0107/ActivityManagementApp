@@ -3,16 +3,19 @@ using System;
 using ActivityManagementApp.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace ActivityManagementApp.Migrations
+namespace ActivityManagementApp.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251105114616_AddActivityLogs")]
+    partial class AddActivityLogs
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.21");
@@ -90,29 +93,15 @@ namespace ActivityManagementApp.Migrations
                     b.Property<string>("Category")
                         .HasColumnType("TEXT");
 
-                    b.Property<DateTime>("EndDateTime")
+                    b.Property<DateTime?>("EndDateTime")
                         .HasColumnType("TEXT");
 
-                    b.Property<DateTime>("StartDateTime")
+                    b.Property<DateTime?>("StartDateTime")
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
                     b.ToTable("ActivityLogs");
-                });
-
-            modelBuilder.Entity("ActivityManagementApp.Models.CategoryMaster", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("CategoryName")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("CategoryMaster");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
