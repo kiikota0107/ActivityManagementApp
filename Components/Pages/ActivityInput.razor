@@ -8,11 +8,11 @@
 <h1>入力画面</h1>
 
 <div style="padding-bottom:15px">
-    <h3>@activityStartTime @_newActivityLogs.Category</h3>
-    @if (_newActivityLogs.Category != null)
+    <h3>@activityStartTimeDisp @_activityLogs.Category</h3>
+    @if (_activityLogs.Category != null)
     {
-        <button @onclick="InsertActivityLogsAsync">終了</button>
-        <button @onclick="Initialize">削除</button>
+        <button @onclick="UpdateProgressActivityLogsAsync">終了</button>
+        <button @onclick="DeleteProgressActivityLogsAsync">削除</button>
     }
 </div>
 
@@ -23,32 +23,46 @@
 
 @code {
     private List<CategoryMaster> _categoryMasters = new List<CategoryMaster>();
-    private ActivityLogs _newActivityLogs = new ActivityLogs();
-    private string? activityStartTime = null;
+    private ActivityLogs _activityLogs = new ActivityLogs();
+    private string? activityStartTimeDisp = null;
 
     protected override async Task OnInitializedAsync()
     {
         _categoryMasters = await _findMasterServices.FindCategoryMaster();
+        ActivityLogs? findResult = await _activityInputService.FindProgressActivityLogsAsync();
+
+        if(findResult != null)
+        {
+            _activityLogs = findResult;
+            activityStartTimeDisp = findResult.StartDateTime.ToString("HH:mm");
+        }
     }
 
     private void Initialize()
     {
-        _newActivityLogs = new ActivityLogs();
-        activityStartTime = null;
+        _activityLogs = new ActivityLogs();
+        activityStartTimeDisp = null;
     }
 
-    private void StartActivity(string? category)
+    private async Task StartActivity(string? category)
     {
-        _newActivityLogs.StartDateTime = DateTime.Now;
-        _newActivityLogs.Category = category;
+        _activityLogs.StartDateTime = DateTime.Now;
+        _activityLogs.Category = category;
 
-        activityStartTime = _newActivityLogs.StartDateTime.ToString("HH:mm");
+        activityStartTimeDisp = _activityLogs.StartDateTime.ToString("HH:mm");
+
+        await _activityInputService.InsertActivityLogsAsync(_activityLogs);
     }
 
-    private async Task InsertActivityLogsAsync()
+    private async Task UpdateProgressActivityLogsAsync()
     {
-        _newActivityLogs.EndDateTime = DateTime.Now;
-        await _activityInputService.InsertActivityLogsAsync(_newActivityLogs);
+        await _activityInputService.UpdateProgressActivityLogsAsync(_activityLogs.Id);
+        Initialize();
+    }
+
+    private async Task DeleteProgressActivityLogsAsync()
+    {
+        await _activityInputService.DeleteProgressActivityLogsAsync(_activityLogs.Id);
         Initialize();
     }
 }
