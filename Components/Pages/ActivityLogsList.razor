@@ -6,6 +6,13 @@
 
 <h1>一覧画面</h1>
 
+<h3>@targetDate.ToString("yyyy/MM/dd")</h3>
+
+<div style="padding-bottom:20px;">
+    <button @onclick="() => ChangeTragetDate(-1)">前日</button>
+    <button @onclick="() => ChangeTragetDate(1)">翌日</button>
+</div>
+
 @foreach (ActivityLogs activityLog in _activityLogs)
 {
     string customFormatStartTime = activityLog.StartDateTime.ToString("HH:mm");
@@ -16,10 +23,17 @@
 }
 
 @code {
+    DateTime targetDate = DateTime.Today;
     private List<ActivityLogs> _activityLogs = new List<ActivityLogs>();
 
     protected override async Task OnInitializedAsync()
     {
-        _activityLogs = await _findActivityLogsService.FindActivityLogs();
+        _activityLogs = await _findActivityLogsService.FindActivityLogs(targetDate);
+    }
+
+    private async Task ChangeTragetDate(int changeDayNum)
+    {
+        targetDate = targetDate.AddDays(changeDayNum);
+        _activityLogs = await _findActivityLogsService.FindActivityLogs(targetDate);
     }
 }
