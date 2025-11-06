@@ -8,5 +8,6 @@ namespace ActivityManagementApp.Models
         [Key]
         public int Id { get; set; }
         public string? CategoryName { get; set; }
+        public int CategoryType { get; set; }
     }
 }

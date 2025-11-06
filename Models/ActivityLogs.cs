@@ -10,5 +10,6 @@ namespace ActivityManagementApp.Models
         public string? Category { get; set; }
         public DateTime StartDateTime { get; set; }
         public DateTime EndDateTime { get; set; }
+        public double PassingRoundMinutes { get; set; } = 0;
     }
 }

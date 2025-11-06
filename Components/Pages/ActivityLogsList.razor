@@ -3,6 +3,7 @@
 @using ActivityManagementApp.Models
 @using ActivityManagementApp.Services
 @inject FindActivityLogsService _findActivityLogsService
+@inject FindMasterServices _findMasterServices
 
 <h1>一覧画面</h1>
 
@@ -13,27 +14,67 @@
     <button @onclick="() => ChangeTragetDate(1)">翌日</button>
 </div>
 
-@foreach (ActivityLogs activityLog in _activityLogs)
+<div style="padding-bottom:20px;">
+    <h4>娯楽の時間合計：@entertainmentTimeTotal 分</h4>
+    <h4>自己研鑽の時間合計：@selfImprovementTimeTotal 分</h4>
+</div>
+
+@foreach (ActivityLogs record in _activityLogs)
 {
-    string customFormatStartTime = activityLog.StartDateTime.ToString("HH:mm");
-    string customFormatEndTime = activityLog.EndDateTime.ToString("HH:mm");
-    TimeSpan diff = DateTime.Parse(customFormatEndTime) - DateTime.Parse(customFormatStartTime);
-    double passingRoundMinutes = Math.Round(diff.TotalMinutes);
-    <h5>@activityLog.Category (@passingRoundMinutes 分) ： @customFormatStartTime ～ @customFormatEndTime</h5>
+    string customFormatStartTime = record.StartDateTime.ToString("HH:mm");
+    string customFormatEndTime = record.EndDateTime.ToString("HH:mm");
+
+    <h5>@record.Category (@record.PassingRoundMinutes 分) ： @customFormatStartTime ～ @customFormatEndTime</h5>
 }
 
 @code {
-    DateTime targetDate = DateTime.Today;
+    private DateTime targetDate = DateTime.Today;
+    private double entertainmentTimeTotal;
+    private double selfImprovementTimeTotal;
+    private List<string> entertainmentList = new List<string>();
+    private List<string> selfImprovementList = new List<string>();
     private List<ActivityLogs> _activityLogs = new List<ActivityLogs>();
 
     protected override async Task OnInitializedAsync()
     {
+        List<CategoryMaster> categoryMasters = await _findMasterServices.FindCategoryMaster();
+
+        foreach (CategoryMaster record in categoryMasters)
+        {
+            if (record.CategoryType == 1)
+            {
+                entertainmentList.Add(record.CategoryName ?? "");
+            }
+            else if (record.CategoryType == 2)
+            {
+                selfImprovementList.Add(record.CategoryName ?? "");
+            }
+        }
+
         _activityLogs = await _findActivityLogsService.FindActivityLogs(targetDate);
+        CalcSumTime(_activityLogs);
     }
 
     private async Task ChangeTragetDate(int changeDayNum)
     {
+        entertainmentTimeTotal = selfImprovementTimeTotal = 0;
         targetDate = targetDate.AddDays(changeDayNum);
         _activityLogs = await _findActivityLogsService.FindActivityLogs(targetDate);
+        CalcSumTime(_activityLogs);
+    }
+
+    private void CalcSumTime(List<ActivityLogs> activityLogs)
+    {
+        foreach (ActivityLogs record in activityLogs)
+        {
+            if (entertainmentList.Contains(record.Category ?? ""))
+            {
+                entertainmentTimeTotal += record.PassingRoundMinutes;
+            }
+            else if (selfImprovementList.Contains(record.Category ?? ""))
+            {
+                selfImprovementTimeTotal += record.PassingRoundMinutes;
+            }
+        }
     }
 }

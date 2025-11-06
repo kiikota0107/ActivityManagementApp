@@ -31,6 +31,10 @@ namespace ActivityManagementApp.Services
             if (progressActivity != null)
             {
                 progressActivity.EndDateTime = DateTime.Now;
+                string customFormatStartTime = progressActivity.StartDateTime.ToString("HH:mm");
+                string customFormatEndTime = progressActivity.EndDateTime.ToString("HH:mm");
+                TimeSpan diff = DateTime.Parse(customFormatEndTime) - DateTime.Parse(customFormatStartTime);
+                progressActivity.PassingRoundMinutes = Math.Round(diff.TotalMinutes);
                 await _context.SaveChangesAsync();
             }
         }
