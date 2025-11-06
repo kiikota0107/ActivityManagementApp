@@ -40,6 +40,8 @@ builder.Services.AddScoped<ActivityInputService>();
 
 builder.Services.AddScoped<FindMasterServices>();
 
+builder.Services.AddScoped<FindActivityLogsService>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

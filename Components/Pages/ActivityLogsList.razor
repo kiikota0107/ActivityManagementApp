@@ -1,0 +1,25 @@
+﻿@page "/activitylogslist"
+@rendermode InteractiveServer
+@using ActivityManagementApp.Models
+@using ActivityManagementApp.Services
+@inject FindActivityLogsService _findActivityLogsService
+
+<h1>一覧画面</h1>
+
+@foreach (ActivityLogs activityLog in _activityLogs)
+{
+    string customFormatStartTime = activityLog.StartDateTime.ToString("HH:mm");
+    string customFormatEndTime = activityLog.EndDateTime.ToString("HH:mm");
+    TimeSpan diff = DateTime.Parse(customFormatEndTime) - DateTime.Parse(customFormatStartTime);
+    double passingRoundMinutes = Math.Round(diff.TotalMinutes);
+    <h5>@activityLog.Category (@passingRoundMinutes 分) ： @customFormatStartTime ～ @customFormatEndTime</h5>
+}
+
+@code {
+    private List<ActivityLogs> _activityLogs = new List<ActivityLogs>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        _activityLogs = await _findActivityLogsService.FindActivityLogs();
+    }
+}

@@ -1,7 +1,6 @@
 ﻿using ActivityManagementApp.Data;
 using ActivityManagementApp.Models;
 using Microsoft.EntityFrameworkCore;
-using System.Threading.Tasks;
 
 namespace ActivityManagementApp.Services
 {
