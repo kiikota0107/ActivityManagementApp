@@ -31,6 +31,25 @@ namespace ActivityManagementApp.Services
             if (progressActivity != null)
             {
                 progressActivity.EndDateTime = DateTime.Now;
+
+                if (progressActivity.StartDateTime.Date != progressActivity.EndDateTime.Date)
+                {
+                    // 進行中タスクのレコードの終了日時を、開始日の最終時間で更新
+                    progressActivity.EndDateTime = progressActivity.StartDateTime.Date.AddDays(1).AddTicks(-1);
+
+                    // 開始日が跨いだ日付のレコードを新規作成
+                    ActivityLogs newDaysActivity = new ActivityLogs();
+                    newDaysActivity.Category = progressActivity.Category;
+                    newDaysActivity.StartDateTime = DateTime.Today;
+                    newDaysActivity.EndDateTime = DateTime.Now;
+
+                    string customFormatStartTimeForNewDays = newDaysActivity.StartDateTime.ToString("HH:mm");
+                    string customFormatEndTimeForNewDays = newDaysActivity.EndDateTime.ToString("HH:mm");
+                    TimeSpan diffForNewDays = DateTime.Parse(customFormatEndTimeForNewDays) - DateTime.Parse(customFormatStartTimeForNewDays);
+                    newDaysActivity.PassingRoundMinutes = Math.Round(diffForNewDays.TotalMinutes);
+                    _context.ActivityLogs.Add(newDaysActivity);
+                }
+
                 string customFormatStartTime = progressActivity.StartDateTime.ToString("HH:mm");
                 string customFormatEndTime = progressActivity.EndDateTime.ToString("HH:mm");
                 TimeSpan diff = DateTime.Parse(customFormatEndTime) - DateTime.Parse(customFormatStartTime);

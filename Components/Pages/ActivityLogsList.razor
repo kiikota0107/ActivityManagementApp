@@ -17,6 +17,7 @@
 <div style="padding-bottom:20px;">
     <h4>娯楽の時間合計：@entertainmentTimeTotal 分</h4>
     <h4>自己研鑽の時間合計：@selfImprovementTimeTotal 分</h4>
+    <h4>睡眠時間合計：@sleepTimeTotal 分</h4>
 </div>
 
 @foreach (ActivityLogs record in _activityLogs)
@@ -31,8 +32,10 @@
     private DateTime targetDate = DateTime.Today;
     private double entertainmentTimeTotal;
     private double selfImprovementTimeTotal;
+    private double sleepTimeTotal;
     private List<string> entertainmentList = new List<string>();
     private List<string> selfImprovementList = new List<string>();
+    private List<string> sleepList = new List<string>();
     private List<ActivityLogs> _activityLogs = new List<ActivityLogs>();
 
     protected override async Task OnInitializedAsync()
@@ -49,6 +52,10 @@
             {
                 selfImprovementList.Add(record.CategoryName ?? "");
             }
+            else if (record.CategoryType == 3)
+            {
+                sleepList.Add(record.CategoryName ?? "");
+            }
         }
 
         _activityLogs = await _findActivityLogsService.FindActivityLogs(targetDate);
@@ -57,7 +64,7 @@
 
     private async Task ChangeTragetDate(int changeDayNum)
     {
-        entertainmentTimeTotal = selfImprovementTimeTotal = 0;
+        entertainmentTimeTotal = selfImprovementTimeTotal = sleepTimeTotal = 0;
         targetDate = targetDate.AddDays(changeDayNum);
         _activityLogs = await _findActivityLogsService.FindActivityLogs(targetDate);
         CalcSumTime(_activityLogs);
@@ -74,6 +81,10 @@
             else if (selfImprovementList.Contains(record.Category ?? ""))
             {
                 selfImprovementTimeTotal += record.PassingRoundMinutes;
+            }
+            else if (sleepList.Contains(record.Category ?? ""))
+            {
+                sleepTimeTotal += record.PassingRoundMinutes;
             }
         }
     }
