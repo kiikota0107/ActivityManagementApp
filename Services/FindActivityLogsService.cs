@@ -13,7 +13,13 @@ namespace ActivityManagementApp.Services
             _context = context;
         }
 
-        public async Task<List<ActivityLogs>> FindActivityLogs(DateTime targetDate)
+        public async Task<ActivityLogs> FindActivityLogsById(int Id)
+        {
+            ActivityLogs activityLogs = await _context.ActivityLogs.SingleAsync(x => x.Id == Id);
+            return activityLogs;
+        }
+
+        public async Task<List<ActivityLogs>> FindActivityLogsByDatgetDate(DateTime targetDate)
         {
             List<ActivityLogs> activityLogs = await _context.ActivityLogs.Where(x => ((x.StartDateTime > targetDate && x.StartDateTime < targetDate.AddDays(1))
                                                                                   || (x.EndDateTime > targetDate && x.EndDateTime < targetDate.AddDays(1)))

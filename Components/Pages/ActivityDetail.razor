@@ -1,0 +1,22 @@
+﻿@page "/activitydetail/{Id:int}"
+@rendermode InteractiveServer
+@using ActivityManagementApp.Models
+@using ActivityManagementApp.Services
+@inject FindActivityLogsService _findActivityLogsService
+
+<h1 style="padding-bottom:15px">詳細画面</h1>
+
+<h3>@_activityLogs.StartDateTime.ToString("yyyy/MM/dd") @_activityLogs.StartDateTime.ToString("HH:mm")～@_activityLogs.EndDateTime.ToString("HH:mm") @_activityLogs.Category</h3>
+<textarea rows="10" cols="80" @bind="@_activityLogs.activityDetail"></textarea>
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private ActivityLogs _activityLogs = new ActivityLogs();
+
+    protected override async Task OnInitializedAsync()
+    {
+        _activityLogs = await _findActivityLogsService.FindActivityLogsById(Id);
+    }
+}

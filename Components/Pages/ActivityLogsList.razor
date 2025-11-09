@@ -25,7 +25,15 @@
     string customFormatStartTime = record.StartDateTime.ToString("HH:mm");
     string customFormatEndTime = record.EndDateTime.ToString("HH:mm");
 
-    <h5>@record.Category (@record.PassingRoundMinutes 分) ： @customFormatStartTime ～ @customFormatEndTime</h5>
+    <h5>
+        @record.Category (@record.PassingRoundMinutes 分) ： @customFormatStartTime ～ @customFormatEndTime &nbsp;
+
+        @if (record.activityDetail != null)
+        {
+            <a href="activitydetail/@record.Id" style="text-decoration:none;"> @record.activityDetail.Substring(0, 15)</a>
+        }
+
+    </h5>
 }
 
 @code {
@@ -58,7 +66,7 @@
             }
         }
 
-        _activityLogs = await _findActivityLogsService.FindActivityLogs(targetDate);
+        _activityLogs = await _findActivityLogsService.FindActivityLogsByDatgetDate(targetDate);
         CalcSumTime(_activityLogs);
     }
 
@@ -66,7 +74,7 @@
     {
         entertainmentTimeTotal = selfImprovementTimeTotal = sleepTimeTotal = 0;
         targetDate = targetDate.AddDays(changeDayNum);
-        _activityLogs = await _findActivityLogsService.FindActivityLogs(targetDate);
+        _activityLogs = await _findActivityLogsService.FindActivityLogsByDatgetDate(targetDate);
         CalcSumTime(_activityLogs);
     }
 

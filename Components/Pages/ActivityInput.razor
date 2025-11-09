@@ -9,10 +9,16 @@
 
 <div style="padding-bottom:15px">
     <h3>@activityStartTimeDisp @_activityLog.Category</h3>
+
     @if (_activityLog.Category != null)
     {
-        <button @onclick="UpdateProgressActivityLogsAsync">終了</button>
-        <button @onclick="DeleteProgressActivityLogsAsync">削除</button>
+        <textarea rows="5" cols="50" @bind="_activityLog.activityDetail" />
+
+        <div>
+            <button @onclick="UpdateProgressActivityLogsTempAsync">一時保存</button>
+            <button @onclick="UpdateProgressActivityLogsAsync">終了</button>
+            <button @onclick="DeleteProgressActivityLogsAsync">削除</button>
+        </div>
     }
 </div>
 
@@ -54,9 +60,14 @@
         await _activityInputService.InsertActivityLogsAsync(_activityLog);
     }
 
+    private async Task UpdateProgressActivityLogsTempAsync()
+    {
+        await _activityInputService.UpdateProgressActivityLogsTempAsync(_activityLog);
+    }
+
     private async Task UpdateProgressActivityLogsAsync()
     {
-        await _activityInputService.UpdateProgressActivityLogsAsync(_activityLog.Id);
+        await _activityInputService.UpdateProgressActivityLogsAsync(_activityLog);
         Initialize();
     }
 

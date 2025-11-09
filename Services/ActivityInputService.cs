@@ -25,9 +25,21 @@ namespace ActivityManagementApp.Services
             await _context.SaveChangesAsync();
         }
 
-        public async Task UpdateProgressActivityLogsAsync(int id)
+        public async Task UpdateProgressActivityLogsTempAsync(ActivityLogs activityLogsInput)
         {
-            ActivityLogs? progressActivity = await _context.ActivityLogs.FindAsync(id);
+            ActivityLogs? progressActivity = await _context.ActivityLogs.FindAsync(activityLogsInput.Id);
+
+            if (progressActivity != null)
+            {
+                progressActivity.activityDetail = activityLogsInput.activityDetail;
+                await _context.SaveChangesAsync();
+            }
+        }
+
+        public async Task UpdateProgressActivityLogsAsync(ActivityLogs activityLogsInput)
+        {
+            ActivityLogs? progressActivity = await _context.ActivityLogs.FindAsync(activityLogsInput.Id);
+
             if (progressActivity != null)
             {
                 progressActivity.EndDateTime = DateTime.Now;
@@ -54,6 +66,7 @@ namespace ActivityManagementApp.Services
                 string customFormatEndTime = progressActivity.EndDateTime.ToString("HH:mm");
                 TimeSpan diff = DateTime.Parse(customFormatEndTime) - DateTime.Parse(customFormatStartTime);
                 progressActivity.PassingRoundMinutes = Math.Round(diff.TotalMinutes);
+                progressActivity.activityDetail = activityLogsInput.activityDetail;
                 await _context.SaveChangesAsync();
             }
         }
