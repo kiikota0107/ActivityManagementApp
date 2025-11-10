@@ -6,17 +6,23 @@
 
 <h1 style="padding-bottom:15px">詳細画面</h1>
 
-<h3>@_activityLogs.StartDateTime.ToShortDateString() @_activityLogs.StartDateTime.ToShortTimeString()～@_activityLogs.EndDateTime.ToShortTimeString() @_activityLogs.Category</h3>
-<textarea rows="10" cols="80" @bind="@_activityLogs.ActivityDetail"></textarea>
+<h3>@_activityLog.StartDateTime.ToShortDateString() @_activityLog.StartDateTime.ToShortTimeString()～@_activityLog.EndDateTime.ToShortTimeString() @_activityLog.Category</h3>
+
+<div>
+    <input style="width:415px" @bind="_activityLog.ActivityDetailTitle" />
+</div>
+<div>
+    <textarea rows="10" cols="80" @bind="@_activityLog.ActivityDetail"></textarea>
+</div>
 
 @code {
     [Parameter]
     public int Id { get; set; }
 
-    private ActivityLogs _activityLogs = new ActivityLogs();
+    private ActivityLogs _activityLog = new ActivityLogs();
 
     protected override async Task OnInitializedAsync()
     {
-        _activityLogs = await _findActivityLogsService.FindActivityLogsById(Id);
+        _activityLog = await _findActivityLogsService.FindActivityLogsById(Id);
     }
 }

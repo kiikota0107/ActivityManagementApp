@@ -12,7 +12,12 @@
 
     @if (_activityLog.Category != null)
     {
-        <textarea rows="5" cols="50" @bind="_activityLog.ActivityDetail" />
+        <div>
+            <input style="width:415px" @bind="_activityLog.ActivityDetailTitle" />
+        </div>
+        <div>
+            <textarea rows="5" cols="50" @bind="_activityLog.ActivityDetail" />
+        </div>
 
         <div>
             <button @onclick="UpdateProgressActivityLogsTempAsync">一時保存</button>

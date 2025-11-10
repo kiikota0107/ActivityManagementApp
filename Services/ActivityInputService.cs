@@ -31,6 +31,7 @@ namespace ActivityManagementApp.Services
 
             if (progressActivity != null)
             {
+                progressActivity.ActivityDetailTitle = activityLogsInput.ActivityDetailTitle;
                 progressActivity.ActivityDetail = activityLogsInput.ActivityDetail;
                 await _context.SaveChangesAsync();
             }
@@ -66,6 +67,7 @@ namespace ActivityManagementApp.Services
                 string customFormatEndTime = progressActivity.EndDateTime.ToShortTimeString();
                 TimeSpan diff = DateTime.Parse(customFormatEndTime) - DateTime.Parse(customFormatStartTime);
                 progressActivity.PassingRoundMinutes = Math.Round(diff.TotalMinutes);
+                progressActivity.ActivityDetailTitle = activityLogsInput.ActivityDetailTitle;
                 progressActivity.ActivityDetail = activityLogsInput.ActivityDetail;
                 await _context.SaveChangesAsync();
             }
