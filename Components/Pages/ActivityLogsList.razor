@@ -28,9 +28,9 @@
     <h5>
         @record.Category (@record.PassingRoundMinutes 分) ： @startTimeDisp ～ @endTimeDisp &nbsp;
 
-        @if (record.activityDetail != null)
+        @if (record.ActivityDetail != null)
         {
-            <a href="activitydetail/@record.Id" style="text-decoration:none;"> @record.activityDetail.Substring(0, 15)</a>
+            <a href="activitydetail/@record.Id" style="text-decoration:none;"> @record.ActivityDetail.Substring(0, 15)</a>
         }
 
     </h5>

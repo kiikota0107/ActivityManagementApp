@@ -11,6 +11,7 @@ namespace ActivityManagementApp.Models
         public DateTime StartDateTime { get; set; }
         public DateTime EndDateTime { get; set; }
         public double PassingRoundMinutes { get; set; } = 0;
+        public string? ActivityDetailTitle { get; set; }
         public string? ActivityDetail { get; set; }
     }
 }
