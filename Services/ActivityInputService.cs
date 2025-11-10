@@ -55,15 +55,15 @@ namespace ActivityManagementApp.Services
                     newDaysActivity.StartDateTime = DateTime.Today;
                     newDaysActivity.EndDateTime = DateTime.Now;
 
-                    string customFormatStartTimeForNewDays = newDaysActivity.StartDateTime.ToString("HH:mm");
-                    string customFormatEndTimeForNewDays = newDaysActivity.EndDateTime.ToString("HH:mm");
+                    string customFormatStartTimeForNewDays = newDaysActivity.StartDateTime.ToShortTimeString();
+                    string customFormatEndTimeForNewDays = newDaysActivity.EndDateTime.ToShortTimeString();
                     TimeSpan diffForNewDays = DateTime.Parse(customFormatEndTimeForNewDays) - DateTime.Parse(customFormatStartTimeForNewDays);
                     newDaysActivity.PassingRoundMinutes = Math.Round(diffForNewDays.TotalMinutes);
                     _context.ActivityLogs.Add(newDaysActivity);
                 }
 
-                string customFormatStartTime = progressActivity.StartDateTime.ToString("HH:mm");
-                string customFormatEndTime = progressActivity.EndDateTime.ToString("HH:mm");
+                string customFormatStartTime = progressActivity.StartDateTime.ToShortTimeString();
+                string customFormatEndTime = progressActivity.EndDateTime.ToShortTimeString();
                 TimeSpan diff = DateTime.Parse(customFormatEndTime) - DateTime.Parse(customFormatStartTime);
                 progressActivity.PassingRoundMinutes = Math.Round(diff.TotalMinutes);
                 progressActivity.activityDetail = activityLogsInput.activityDetail;

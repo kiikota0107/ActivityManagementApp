@@ -7,7 +7,7 @@
 
 <h1>一覧画面</h1>
 
-<h3>@targetDate.ToString("yyyy/MM/dd")</h3>
+<h3>@targetDate.ToShortDateString()</h3>
 
 <div style="padding-bottom:20px;">
     <button @onclick="() => ChangeTragetDate(-1)">前日</button>
@@ -22,11 +22,11 @@
 
 @foreach (ActivityLogs record in _activityLogs)
 {
-    string customFormatStartTime = record.StartDateTime.ToString("HH:mm");
-    string customFormatEndTime = record.EndDateTime.ToString("HH:mm");
+    string startTimeDisp = record.StartDateTime.ToShortTimeString();
+    string endTimeDisp  = record.EndDateTime.ToShortTimeString();
 
     <h5>
-        @record.Category (@record.PassingRoundMinutes 分) ： @customFormatStartTime ～ @customFormatEndTime &nbsp;
+        @record.Category (@record.PassingRoundMinutes 分) ： @startTimeDisp ～ @endTimeDisp &nbsp;
 
         @if (record.activityDetail != null)
         {

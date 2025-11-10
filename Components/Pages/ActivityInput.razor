@@ -40,7 +40,7 @@
         if(findResult != null)
         {
             _activityLog = findResult;
-            activityStartTimeDisp = findResult.StartDateTime.ToString("HH:mm");
+            activityStartTimeDisp = findResult.StartDateTime.ToShortTimeString();
         }
     }
 
@@ -55,7 +55,7 @@
         _activityLog.StartDateTime = DateTime.Now;
         _activityLog.Category = category;
 
-        activityStartTimeDisp = _activityLog.StartDateTime.ToString("HH:mm");
+        activityStartTimeDisp = _activityLog.StartDateTime.ToShortTimeString();
 
         await _activityInputService.InsertActivityLogsAsync(_activityLog);
     }
