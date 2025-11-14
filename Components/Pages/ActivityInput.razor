@@ -170,6 +170,12 @@
 
     private async Task StartActivity(string? category)
     {
+        if (!string.IsNullOrEmpty(_activityLog.Category))
+        {
+            ShowToast("進行中のタスクがあるため、新規タスクを作成できません。", "danger");
+            return;
+        }
+
         if (string.IsNullOrWhiteSpace(category)) return;
 
         _activityLog.StartDateTime = DateTime.Now;
