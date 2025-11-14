@@ -1,24 +1,19 @@
 ﻿@page "/activityinput"
 @rendermode InteractiveServer
 @using ActivityManagementApp.Models
+@using ActivityManagementApp.ViewModels
 @using ActivityManagementApp.Services
+@using System.ComponentModel.DataAnnotations
 @inject ActivityInputService _activityInputService
 @inject FindMasterServices _findMasterServices
 
 <PageTitle>入力画面</PageTitle>
 
 <style>
-    .category-btn {
-        min-width: 110px;
-    }
-
-        .category-btn.active {
-            box-shadow: 0 0 0 0.2rem rgba(13,110,253,.25);
-        }
-
-    .category-card .card-body {
-        gap: .5rem;
-    }
+    .category-btn { min-width: 110px; }
+    .category-btn.active { box-shadow: 0 0 0 0.2rem rgba(13,110,253,.25); }
+    .category-card .card-body { gap: .5rem; }
+    .invalid-feedback { display:block; }
 </style>
 
 <!-- トースト通知領域 -->
@@ -54,17 +49,25 @@
             <div class="card-body">
                 <div class="mb-3">
                     <label class="form-label">タスクタイトル</label>
-                    <input class="form-control" @bind="_activityLog.ActivityDetailTitle" placeholder="例：アルゴリズム学習" />
+                    <input class="@TitleInputClass" @bind="inputModel.ActivityDetailTitle" placeholder="例：アルゴリズム学習" />
+                    @if (validationErrors.ContainsKey(nameof(inputModel.ActivityDetailTitle)))
+                    {
+                        <div class="invalid-feedback">@validationErrors[nameof(inputModel.ActivityDetailTitle)]</div>
+                    }
                 </div>
 
                 <div class="mb-3">
                     <label class="form-label">詳細メモ</label>
-                    <textarea class="form-control" rows="4" @bind="_activityLog.ActivityDetail" placeholder="やったこと・気づき・次回TODO"></textarea>
+                    <textarea class="@DetailInputClass" rows="4" @bind="inputModel.ActivityDetail" placeholder="やったこと・気づき・次回TODO"></textarea>
+                    @if (validationErrors.ContainsKey(nameof(inputModel.ActivityDetail)))
+                    {
+                        <div class="invalid-feedback">@validationErrors[nameof(inputModel.ActivityDetail)]</div>
+                    }
                 </div>
 
                 <div class="d-flex gap-2">
-                    <button class="btn btn-outline-secondary" @onclick="UpdateProgressActivityLogsTempAsync">一時保存</button>
-                    <button class="btn btn-success" @onclick="UpdateProgressActivityLogsAsync">終了</button>
+                    <button class="btn btn-outline-secondary" @onclick="() => ExecuteWithValidation(UpdateProgressActivityLogsTempAsync)">一時保存</button>
+                    <button class="btn btn-success" @onclick="() => ExecuteWithValidation(UpdateProgressActivityLogsAsync)">終了</button>
                     <button class="btn btn-danger" @onclick="DeleteProgressActivityLogsAsync">削除</button>
                 </div>
             </div>
@@ -100,6 +103,12 @@
     private List<CategoryMaster> _categoryMasters = new();
     private ActivityLogs _activityLog = new();
     private string? activityStartTimeDisp = null;
+    private ActivityInputViewModel inputModel = new();
+    private Dictionary<string, string> validationErrors = new();
+
+    private string TitleInputClass => validationErrors.ContainsKey(nameof(inputModel.ActivityDetailTitle)) ? "form-control is-invalid" : "form-control";
+    private string DetailInputClass => validationErrors.ContainsKey(nameof(inputModel.ActivityDetail)) ? "form-control is-invalid" : "form-control";
+
 
     // トースト通知用
     private string? toastMessage;
@@ -114,12 +123,48 @@
         {
             _activityLog = findResult;
             activityStartTimeDisp = findResult.StartDateTime.ToShortTimeString();
+
+            inputModel.ActivityDetailTitle = _activityLog.ActivityDetailTitle ?? "";
+            inputModel.ActivityDetail = _activityLog.ActivityDetail ?? "";
         }
+    }
+
+    private bool ValidateInput()
+    {
+        var context = new ValidationContext(inputModel);
+        var results = new List<ValidationResult>();
+
+        bool isValid = Validator.TryValidateObject(inputModel, context, results, true);
+
+        validationErrors = results
+            .Where(r => r.MemberNames.Any())
+            .ToDictionary(
+                r => r.MemberNames.First(),
+                r => r.ErrorMessage ?? "入力エラーがあります"
+            );
+
+        return isValid;
+    }
+
+    private async Task ExecuteWithValidation(Func<Task> action)
+    {
+        if (!ValidateInput())
+        {
+            ShowToast("入力エラーがあります。", "danger");
+            return;
+        }
+
+        // ViewModel → Entity
+        _activityLog.ActivityDetailTitle = inputModel.ActivityDetailTitle;
+        _activityLog.ActivityDetail = inputModel.ActivityDetail;
+
+        await action();
     }
 
     private void Initialize()
     {
         _activityLog = new ActivityLogs();
+        inputModel = new ActivityInputViewModel();
         activityStartTimeDisp = null;
     }
 
