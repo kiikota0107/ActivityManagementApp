@@ -5,44 +5,112 @@
 @inject ActivityInputService _activityInputService
 @inject FindMasterServices _findMasterServices
 
-<h1>入力画面</h1>
+<PageTitle>入力画面</PageTitle>
 
-<div style="padding-bottom:15px">
-    <h3>@activityStartTimeDisp @_activityLog.Category</h3>
+<style>
+    .category-btn {
+        min-width: 110px;
+    }
 
-    @if (_activityLog.Category != null)
+        .category-btn.active {
+            box-shadow: 0 0 0 0.2rem rgba(13,110,253,.25);
+        }
+
+    .category-card .card-body {
+        gap: .5rem;
+    }
+</style>
+
+<!-- トースト通知領域 -->
+<div class="position-fixed top-0 end-0 p-3" style="z-index: 1100">
+    @if (!string.IsNullOrEmpty(toastMessage))
     {
-        <div>
-            <input style="width:415px" @bind="_activityLog.ActivityDetailTitle" />
-        </div>
-        <div>
-            <textarea rows="5" cols="50" @bind="_activityLog.ActivityDetail" />
-        </div>
-
-        <div>
-            <button @onclick="UpdateProgressActivityLogsTempAsync">一時保存</button>
-            <button @onclick="UpdateProgressActivityLogsAsync">終了</button>
-            <button @onclick="DeleteProgressActivityLogsAsync">削除</button>
+        <div class="toast show align-items-center text-white bg-@toastType border-0" role="alert">
+            <div class="d-flex">
+                <div class="toast-body">@toastMessage</div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" @onclick="HideToast"></button>
+            </div>
         </div>
     }
 </div>
 
-@foreach (CategoryMaster categoryMaster in _categoryMasters)
-{
-    <button @onclick='() => StartActivity(categoryMaster.CategoryName)'>@categoryMaster.CategoryName</button>
-}
+<div class="container mt-4">
+    <h1 class="mb-3">入力画面</h1>
+
+    <div class="alert alert-secondary" role="alert">
+        📋 カテゴリをクリックすると活動の記録が開始されます。詳細を入力して「終了」を押すと保存されます。
+    </div>
+
+    <!-- 進行中タスクのカード -->
+    @if (_activityLog?.Category != null)
+    {
+        <div class="card mb-4 shadow-sm">
+            <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                <div>
+                    現在進行中：<strong>@_activityLog.Category</strong>
+                    <small class="text-muted">（開始：@activityStartTimeDisp）</small>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label">タスクタイトル</label>
+                    <input class="form-control" @bind="_activityLog.ActivityDetailTitle" placeholder="例：アルゴリズム学習" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">詳細メモ</label>
+                    <textarea class="form-control" rows="4" @bind="_activityLog.ActivityDetail" placeholder="やったこと・気づき・次回TODO"></textarea>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button class="btn btn-outline-secondary" @onclick="UpdateProgressActivityLogsTempAsync">一時保存</button>
+                    <button class="btn btn-success" @onclick="UpdateProgressActivityLogsAsync">終了</button>
+                    <button class="btn btn-danger" @onclick="DeleteProgressActivityLogsAsync">削除</button>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- カテゴリカード -->
+    <div class="row">
+        @foreach (var group in _categoryMasters.GroupBy(c => c.CategoryType))
+        {
+            <div class="col-12 col-md-6 mb-3">
+                <div class="card category-card h-100">
+                    <div class="card-header bg-light fw-bold">
+                        @GetCategoryTypeName(group.Key)
+                    </div>
+                    <div class="card-body d-flex flex-wrap">
+                        @foreach (var category in group)
+                        {
+                            var btnClass = GetCategoryButtonClass(group.Key);
+                            <button class="btn category-btn me-2 mb-2 @btnClass @(IsActive(category.CategoryName) ? "active" : "")"
+                                    @onclick="() => StartActivity(category.CategoryName)">
+                                @category.CategoryName
+                            </button>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
 
 @code {
-    private List<CategoryMaster> _categoryMasters = new List<CategoryMaster>();
-    private ActivityLogs _activityLog = new ActivityLogs();
+    private List<CategoryMaster> _categoryMasters = new();
+    private ActivityLogs _activityLog = new();
     private string? activityStartTimeDisp = null;
+
+    // トースト通知用
+    private string? toastMessage;
+    private string toastType = "success";
 
     protected override async Task OnInitializedAsync()
     {
         _categoryMasters = await _findMasterServices.FindCategoryMaster();
-        ActivityLogs? findResult = await _activityInputService.FindProgressActivityLogsAsync();
+        var findResult = await _activityInputService.FindProgressActivityLogsAsync();
 
-        if(findResult != null)
+        if (findResult != null)
         {
             _activityLog = findResult;
             activityStartTimeDisp = findResult.StartDateTime.ToShortTimeString();
@@ -57,28 +125,77 @@
 
     private async Task StartActivity(string? category)
     {
+        if (string.IsNullOrWhiteSpace(category)) return;
+
         _activityLog.StartDateTime = DateTime.Now;
         _activityLog.Category = category;
-
         activityStartTimeDisp = _activityLog.StartDateTime.ToShortTimeString();
 
         await _activityInputService.InsertActivityLogsAsync(_activityLog);
+        ShowToast("タスクを開始しました。", "info");
     }
 
     private async Task UpdateProgressActivityLogsTempAsync()
     {
         await _activityInputService.UpdateProgressActivityLogsTempAsync(_activityLog);
+        ShowToast("一時保存しました。", "success");
     }
 
     private async Task UpdateProgressActivityLogsAsync()
     {
         await _activityInputService.UpdateProgressActivityLogsAsync(_activityLog);
         Initialize();
+        ShowToast("タスクを終了しました。", "info");
     }
 
     private async Task DeleteProgressActivityLogsAsync()
     {
         await _activityInputService.DeleteProgressActivityLogsAsync(_activityLog.Id);
         Initialize();
+        ShowToast("タスクを削除しました。", "danger");
+    }
+
+    private async void ShowToast(string message, string type)
+    {
+        toastMessage = $"[{DateTime.Now:HH:mm}] {message}";
+        toastType = type;
+
+        await Task.Delay(4000);
+
+        await InvokeAsync(() =>
+        {
+            toastMessage = null;
+            StateHasChanged();
+        });
+    }
+
+    private void HideToast()
+    {
+        toastMessage = null;
+    }
+
+    private string GetCategoryTypeName(int type) => type switch
+    {
+        0 => "生活",
+        1 => "娯楽",
+        2 => "自己研鑽",
+        3 => "睡眠",
+        4 => "仕事",
+        _ => "その他"
+    };
+
+    private string GetCategoryButtonClass(int type) => type switch
+    {
+        0 => "btn btn-outline-secondary", // 生活
+        1 => "btn btn-outline-warning",   // 娯楽
+        2 => "btn btn-outline-success",   // 自己研鑽
+        3 => "btn btn-outline-info",      // 睡眠
+        4 => "btn btn-outline-primary",   // 仕事
+        _ => "btn btn-outline-dark"
+    };
+
+    private bool IsActive(string categoryName)
+    {
+        return _activityLog != null && !string.IsNullOrEmpty(_activityLog.Category) && _activityLog.Category == categoryName;
     }
 }
