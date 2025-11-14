@@ -73,6 +73,17 @@ namespace ActivityManagementApp.Services
             }
         }
 
+        public async Task UpdateActivityDetailAsync(ActivityLogs inputActivityLogs)
+        {
+            ActivityLogs? targetActivity = await _context.ActivityLogs.FindAsync(inputActivityLogs.Id);
+            if(targetActivity != null)
+            {
+                targetActivity.ActivityDetailTitle = inputActivityLogs.ActivityDetailTitle;
+                targetActivity.ActivityDetail = inputActivityLogs.ActivityDetail;
+                await _context.SaveChangesAsync();
+            }
+        }
+
         public async Task DeleteProgressActivityLogsAsync(int id)
         {
             ActivityLogs? progressActivity = await _context.ActivityLogs.FindAsync(id);

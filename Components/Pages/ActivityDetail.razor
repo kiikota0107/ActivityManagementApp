@@ -3,8 +3,22 @@
 @using ActivityManagementApp.Models
 @using ActivityManagementApp.Services
 @inject FindActivityLogsService _findActivityLogsService
+@inject ActivityInputService _activityInputService
 
 <PageTitle>詳細画面</PageTitle>
+
+<!-- トースト通知領域 -->
+<div class="position-fixed top-0 end-0 p-3" style="z-index: 1100">
+    @if (!string.IsNullOrEmpty(toastMessage))
+    {
+        <div class="toast show align-items-center text-white bg-@toastType border-0" role="alert">
+            <div class="d-flex">
+                <div class="toast-body">@toastMessage</div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" @onclick="HideToast"></button>
+            </div>
+        </div>
+    }
+</div>
 
 <div class="container mt-4">
     <h1 class="mb-3">詳細画面</h1>
@@ -32,6 +46,7 @@
             </div>
 
             <a href="/activitylogslist" class="btn btn-outline-primary">一覧へ戻る</a>
+            <button class="btn btn-outline-success" @onclick="UpdateActivityDetailAsync">内容を更新</button>
         </div>
     </div>
         }
@@ -47,8 +62,37 @@
 
     private ActivityLogs _activityLog = new ActivityLogs();
 
+    // トースト通知用
+    private string? toastMessage;
+    private string toastType = "success";
+
     protected override async Task OnInitializedAsync()
     {
         _activityLog = await _findActivityLogsService.FindActivityLogsById(Id);
+    }
+
+    private async Task UpdateActivityDetailAsync()
+    {
+        await _activityInputService.UpdateActivityDetailAsync(_activityLog);
+        ShowToast("内容を更新しました。", "success");
+    }
+
+    private async void ShowToast(string message, string type)
+    {
+        toastMessage = $"[{DateTime.Now:HH:mm}] {message}";
+        toastType = type;
+
+        await Task.Delay(4000);
+
+        await InvokeAsync(() =>
+        {
+            toastMessage = null;
+            StateHasChanged();
+        });
+    }
+
+    private void HideToast()
+    {
+        toastMessage = null;
     }
 }
