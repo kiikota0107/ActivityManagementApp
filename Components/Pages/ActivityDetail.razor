@@ -4,15 +4,41 @@
 @using ActivityManagementApp.Services
 @inject FindActivityLogsService _findActivityLogsService
 
-<h1 style="padding-bottom:15px">詳細画面</h1>
+<PageTitle>詳細画面</PageTitle>
 
-<h3>@_activityLog.StartDateTime.ToShortDateString() @_activityLog.StartDateTime.ToShortTimeString()～@_activityLog.EndDateTime.ToShortTimeString() @_activityLog.Category</h3>
+<div class="container mt-4">
+    <h1 class="mb-3">詳細画面</h1>
 
-<div>
-    <input style="width:415px" @bind="_activityLog.ActivityDetailTitle" />
-</div>
-<div>
-    <textarea rows="10" cols="80" @bind="@_activityLog.ActivityDetail"></textarea>
+    @if (_activityLog != null)
+    {
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-light fw-bold">
+                @string.Format("{0} {1} ～ {2}   （{3}）",
+                _activityLog.StartDateTime.ToShortDateString(),
+                        _activityLog.StartDateTime.ToShortTimeString(),
+                        _activityLog.EndDateTime.ToShortTimeString(),
+                        _activityLog.Category)
+        </div>
+        <div class="card-body">
+
+            <div class="mb-3">
+                <label class="form-label fw-bold">タイトル</label>
+                <input class="form-control" @bind="_activityLog.ActivityDetailTitle" placeholder="記録した内容の概要" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label fw-bold">詳細内容</label>
+                <textarea class="form-control" rows="10" @bind="_activityLog.ActivityDetail" placeholder="詳細なメモや振り返りを記録"></textarea>
+            </div>
+
+            <a href="/activitylogslist" class="btn btn-outline-primary">一覧へ戻る</a>
+        </div>
+    </div>
+        }
+    else
+    {
+        <div class="alert alert-danger">データが見つかりませんでした。</div>
+    }
 </div>
 
 @code {
