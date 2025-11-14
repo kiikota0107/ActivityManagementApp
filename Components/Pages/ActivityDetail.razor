@@ -2,6 +2,7 @@
 @rendermode InteractiveServer
 @using ActivityManagementApp.Models
 @using ActivityManagementApp.Services
+@using ActivityManagementApp.ViewModels
 @inject FindActivityLogsService _findActivityLogsService
 @inject ActivityInputService _activityInputService
 
@@ -25,30 +26,41 @@
 
     @if (_activityLog != null)
     {
-        <div class="card shadow-sm mb-4">
-            <div class="card-header bg-light fw-bold">
-                @string.Format("{0} {1} ～ {2}   （{3}）",
-                _activityLog.StartDateTime.ToShortDateString(),
-                        _activityLog.StartDateTime.ToShortTimeString(),
-                        _activityLog.EndDateTime.ToShortTimeString(),
-                        _activityLog.Category)
-        </div>
-        <div class="card-body">
+        <EditForm Model="inputModel" OnValidSubmit="UpdateActivityDetailAsync" OnInvalidSubmit="ShowValidationErrorToast">
+            <DataAnnotationsValidator />
 
-            <div class="mb-3">
-                <label class="form-label fw-bold">タイトル</label>
-                <input class="form-control" @bind="_activityLog.ActivityDetailTitle" placeholder="記録した内容の概要" />
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light fw-bold">
+                    @string.Format("{0} {1} ～ {2} （{3}）",
+                    _activityLog.StartDateTime.ToShortDateString(),
+                                _activityLog.StartDateTime.ToShortTimeString(),
+                                _activityLog.EndDateTime.ToShortTimeString(),
+                                _activityLog.Category)
             </div>
 
-            <div class="mb-3">
-                <label class="form-label fw-bold">詳細内容</label>
-                <textarea class="form-control" rows="10" @bind="_activityLog.ActivityDetail" placeholder="詳細なメモや振り返りを記録"></textarea>
-            </div>
+            <div class="card-body">
 
-            <a href="/activitylogslist" class="btn btn-outline-primary">一覧へ戻る</a>
-            <button class="btn btn-outline-success" @onclick="UpdateActivityDetailAsync">内容を更新</button>
+                <!-- タイトル -->
+                <div class="mb-3">
+                    <label class="form-label fw-bold">タイトル</label>
+                    <InputText class="@TitleInputClass" @bind-Value="inputModel.ActivityDetailTitle" />
+                    <ValidationMessage For="@(() => inputModel.ActivityDetailTitle)" />
+                </div>
+
+                <!-- 詳細内容 -->
+                <div class="mb-3">
+                    <label class="form-label fw-bold">詳細内容</label>
+                    <InputTextArea class="@DetailInputClass" @bind-Value="inputModel.ActivityDetail" />
+                    <ValidationMessage For="@(() => inputModel.ActivityDetail)" />
+                </div>
+
+                <div class="d-flex gap-2">
+                    <a href="/activitylogslist" class="btn btn-outline-primary">一覧へ戻る</a>
+                    <button class="btn btn-success" type="submit">内容を更新</button>
+                </div>
+            </div>
         </div>
-    </div>
+    </EditForm>
         }
     else
     {
@@ -60,7 +72,13 @@
     [Parameter]
     public int Id { get; set; }
 
-    private ActivityLogs _activityLog = new ActivityLogs();
+    private ActivityLogs _activityLog = new();
+    private ActivityInputViewModel inputModel = new();
+
+    private Dictionary<string, string> validationErrors = new();
+
+    private string TitleInputClass => validationErrors.ContainsKey(nameof(inputModel.ActivityDetailTitle)) ? "form-control is-invalid" : "form-control";
+    private string DetailInputClass => validationErrors.ContainsKey(nameof(inputModel.ActivityDetail)) ? "form-control is-invalid" : "form-control";
 
     // トースト通知用
     private string? toastMessage;
@@ -69,12 +87,37 @@
     protected override async Task OnInitializedAsync()
     {
         _activityLog = await _findActivityLogsService.FindActivityLogsById(Id);
+
+        if (_activityLog != null)
+        {
+            inputModel.ActivityDetailTitle = _activityLog.ActivityDetailTitle ?? "";
+            inputModel.ActivityDetail = _activityLog.ActivityDetail ?? "";
+        }
     }
 
     private async Task UpdateActivityDetailAsync()
     {
+        validationErrors.Clear();
+
+        // ViewModel → Entity へ反映
+        _activityLog.ActivityDetailTitle = inputModel.ActivityDetailTitle;
+        _activityLog.ActivityDetail = inputModel.ActivityDetail;
+
         await _activityInputService.UpdateActivityDetailAsync(_activityLog);
         ShowToast("内容を更新しました。", "success");
+    }
+
+    private void ShowValidationErrorToast(EditContext editContext)
+    {
+        validationErrors.Clear();
+
+        foreach (var field in editContext.GetValidationMessages())
+        {
+            validationErrors[field] = field;
+        }
+
+        ShowToast("入力内容にエラーがあります。確認してください。", "danger");
+        StateHasChanged();
     }
 
     private async void ShowToast(string message, string type)
