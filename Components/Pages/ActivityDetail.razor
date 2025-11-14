@@ -50,7 +50,7 @@
                 <!-- 詳細内容 -->
                 <div class="mb-3">
                     <label class="form-label fw-bold">詳細内容</label>
-                    <InputTextArea class="@DetailInputClass" @bind-Value="inputModel.ActivityDetail" />
+                    <InputTextArea class="@DetailInputClass" rows="10" @bind-Value="inputModel.ActivityDetail" />
                     <ValidationMessage For="@(() => inputModel.ActivityDetail)" />
                 </div>
 
