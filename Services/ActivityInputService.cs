@@ -69,7 +69,7 @@ namespace ActivityManagementApp.Services
 
                     // 開始日が跨いだ日付のレコードを新規作成
                     ActivityLogs newDaysActivity = new ActivityLogs();
-                    newDaysActivity.Category = progressActivity.Category;
+                    newDaysActivity.CategoryMasterId = progressActivity.CategoryMasterId;
                     newDaysActivity.StartDateTime = DateTime.Today;
                     newDaysActivity.EndDateTime = DateTime.Now;
 

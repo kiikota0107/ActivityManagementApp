@@ -1,145 +1,110 @@
-﻿@page "/activitydetail/{Id:int}"
+﻿@page "/activitydetail/{id:int}"
 @rendermode InteractiveServer
 @using ActivityManagementApp.Models
-@using ActivityManagementApp.Services
 @using ActivityManagementApp.ViewModels
+@using ActivityManagementApp.Services
 @using Microsoft.AspNetCore.Authorization
 @attribute [Authorize]
-@inject FindActivityLogsService _findActivityLogsService
+
 @inject ActivityInputService _activityInputService
+@inject FindActivityLogsService _findActivityLogsService
+@inject FindMasterServices _findMasterServices
+@inject NavigationManager NavigationManager
 
-<PageTitle>詳細画面</PageTitle>
-
-<!-- トースト通知領域 -->
-<div class="position-fixed top-0 end-0 p-3" style="z-index: 1100">
-    @if (!string.IsNullOrEmpty(toastMessage))
-    {
-        <div class="toast show align-items-center text-white bg-@toastType border-0" role="alert">
-            <div class="d-flex">
-                <div class="toast-body">@toastMessage</div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" @onclick="HideToast"></button>
-            </div>
-        </div>
-    }
-</div>
+<PageTitle>詳細編集</PageTitle>
 
 <div class="container mt-4">
     <h1 class="mb-3">詳細画面</h1>
 
-    @if (_activityLog != null)
+    @if (activity == null)
     {
-        <EditForm Model="inputModel" OnValidSubmit="UpdateActivityDetailAsync" OnInvalidSubmit="ShowValidationErrorToast">
-            <DataAnnotationsValidator />
+        <div class="alert alert-danger">
+            データが見つかりませんでした。
+        </div>
+        return;
+    }
 
-            <div class="card shadow-sm mb-4">
-                <div class="card-header bg-light fw-bold">
-                    @string.Format("{0} {1} ～ {2} （{3}）",
-                    _activityLog.StartDateTime.ToShortDateString(),
-                                _activityLog.StartDateTime.ToShortTimeString(),
-                                _activityLog.EndDateTime.ToShortTimeString(),
-                                _activityLog.Category)
-            </div>
+    <!-- カテゴリ情報 -->
+    <div class="badge
+                @ColorClassBuilder.BuildBackgroundBadgeClass(
+                                    GetColorKey(activity.CategoryMaster.CategoryTypeMasterId),
+                                    GetTextColorKey(activity.CategoryMaster.CategoryTypeMasterId)
+              )">
+        @activity.CategoryMaster.CategoryName
+    </div>
 
-            <div class="card-body">
+    <div class="text-muted mb-3">
+        @activity.StartDateTime.ToString("HH:mm") ～ @activity.EndDateTime.ToString("HH:mm")
+        （@activity.PassingRoundMinutes 分）
+    </div>
 
-                <!-- タイトル -->
-                <div class="mb-3">
-                    <label class="form-label fw-bold">タイトル</label>
-                    <InputText class="@TitleInputClass" @bind-Value="inputModel.ActivityDetailTitle" />
-                    <ValidationMessage For="@(() => inputModel.ActivityDetailTitle)" />
-                </div>
+    <EditForm Model="inputModel" OnValidSubmit="UpdateDetail" FormName="detail-edit">
+        <DataAnnotationsValidator />
+        <ValidationSummary class="text-danger" />
 
-                <!-- 詳細内容 -->
-                <div class="mb-3">
-                    <label class="form-label fw-bold">詳細内容</label>
-                    <InputTextArea class="@DetailInputClass" rows="10" @bind-Value="inputModel.ActivityDetail" />
-                    <ValidationMessage For="@(() => inputModel.ActivityDetail)" />
-                </div>
+        <div class="mb-3">
+            <label class="form-label">タスクタイトル</label>
+            <InputText class="form-control" @bind-Value="inputModel.ActivityDetailTitle" />
+            <ValidationMessage For="() => inputModel.ActivityDetailTitle" class="text-danger" />
+        </div>
 
-                <div class="d-flex gap-2">
-                    <a href="/activitylogslist" class="btn btn-outline-primary">一覧へ戻る</a>
-                    <button class="btn btn-success" type="submit">内容を更新</button>
-                </div>
-            </div>
+        <div class="mb-3">
+            <label class="form-label">詳細メモ</label>
+            <InputTextArea class="form-control" rows="10" @bind-Value="inputModel.ActivityDetail" />
+            <ValidationMessage For="() => inputModel.ActivityDetail" class="text-danger" />
+        </div>
+
+        <div class="d-flex gap-2">
+            <button class="btn btn-primary" type="submit">変更を保存</button>
+            <button class="btn btn-secondary" @onclick="BackToList">戻る</button>
         </div>
     </EditForm>
-        }
-    else
-    {
-        <div class="alert alert-danger">データが見つかりませんでした。</div>
-    }
 </div>
 
 @code {
-    [Parameter]
-    public int Id { get; set; }
+    [Parameter] public int id { get; set; }
 
-    private ActivityLogs? _activityLog = new();
+    private ActivityLogs? activity;
     private ActivityInputViewModel inputModel = new();
-
-    private Dictionary<string, string> validationErrors = new();
-
-    private string TitleInputClass => validationErrors.ContainsKey(nameof(inputModel.ActivityDetailTitle)) ? "form-control is-invalid" : "form-control";
-    private string DetailInputClass => validationErrors.ContainsKey(nameof(inputModel.ActivityDetail)) ? "form-control is-invalid" : "form-control";
-
-    // トースト通知用
-    private string? toastMessage;
-    private string toastType = "success";
+    private List<CategoryTypeMaster> _categoryTypeMasters = new();
 
     protected override async Task OnInitializedAsync()
     {
-        _activityLog = await _findActivityLogsService.FindActivityLogsById(Id);
+        _categoryTypeMasters = await _findMasterServices.FindCategoryTypeMaster();
 
-        if (_activityLog != null)
+        activity = await _findActivityLogsService.FindActivityLogsByIdAsync(id);
+
+        if (activity != null)
         {
-            inputModel.ActivityDetailTitle = _activityLog.ActivityDetailTitle ?? "";
-            inputModel.ActivityDetail = _activityLog.ActivityDetail ?? "";
+            inputModel.ActivityDetailTitle = activity.ActivityDetailTitle ?? "";
+            inputModel.ActivityDetail = activity.ActivityDetail ?? "";
         }
     }
 
-    private async Task UpdateActivityDetailAsync()
+    private async Task UpdateDetail()
     {
-        validationErrors.Clear();
+        if (activity == null) return;
 
-        if (_activityLog != null)
-        {
-            _activityLog.ActivityDetailTitle = inputModel.ActivityDetailTitle;
-            _activityLog.ActivityDetail = inputModel.ActivityDetail;
+        activity.ActivityDetailTitle = inputModel.ActivityDetailTitle;
+        activity.ActivityDetail = inputModel.ActivityDetail;
 
-            await _activityInputService.UpdateActivityDetailAsync(_activityLog);
-            ShowToast("内容を更新しました。", "success");
-        }
+        await _activityInputService.UpdateActivityDetailAsync(activity);
+
+        NavigationManager.NavigateTo("/activitylogslist");
     }
 
-    private void ShowValidationErrorToast(EditContext editContext)
+    private void BackToList()
     {
-        validationErrors.Clear();
-
-        foreach (var field in editContext.GetValidationMessages())
-        {
-            validationErrors[field] = field;
-        }
-
-        ShowToast("入力内容にエラーがあります。確認してください。", "danger");
-        StateHasChanged();
+        NavigationManager.NavigateTo("/activitylogslist");
     }
 
-    private async void ShowToast(string message, string type)
+    private string GetColorKey(int typeId)
     {
-        toastMessage = $"[{DateTime.Now:HH:mm}] {message}";
-        toastType = type;
-
-        await Task.Delay(4000);
-
-        await InvokeAsync(() =>
-        {
-            toastMessage = null;
-            StateHasChanged();
-        });
+        return _categoryTypeMasters.FirstOrDefault(x => x.Id == typeId)?.ColorKey ?? "secondary";
     }
 
-    private void HideToast()
+    private string GetTextColorKey(int typeId)
     {
-        toastMessage = null;
+        return _categoryTypeMasters.FirstOrDefault(x => x.Id == typeId)?.TextColorKey ?? "white";
     }
 }

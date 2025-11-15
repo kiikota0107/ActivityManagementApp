@@ -2,8 +2,6 @@
 @rendermode InteractiveServer
 @using ActivityManagementApp.Models
 @using ActivityManagementApp.Services
-@using Microsoft.AspNetCore.Authorization
-@attribute [Authorize]
 @inject FindActivityLogsService _findActivityLogsService
 @inject FindMasterServices _findMasterServices
 
@@ -12,6 +10,7 @@
 <div class="container mt-4">
     <h1 class="mb-3">一覧画面</h1>
 
+    <!-- 日付移動 -->
     <div class="card mb-3 shadow-sm">
         <div class="card-body d-flex justify-content-between align-items-center">
             <h4 class="m-0">@targetDate.ToShortDateString()</h4>
@@ -22,57 +21,45 @@
         </div>
     </div>
 
+    <!-- 集計エリア -->
     <div class="row mb-4">
 
-        <div class="col-md-3">
-            <div class="card text-center shadow-sm">
-                <div class="card-header bg-warning fw-bold">娯楽</div>
-                <div class="card-body">
-                    <h4>@entertainmentTimeTotal 分</h4>
+        @foreach (var type in categoryTypeStats)
+        {
+            <div class="col-md-3">
+                <div class="card text-center shadow-sm">
+                    <div class="card-header
+                                @ColorClassBuilder.BuildBackgroundBadgeClass(
+                                                    GetColorKey(type.TypeId),
+                                                    GetTextColorKey(type.TypeId)
+                                ) fw-bold">
+                        @type.TypeName
+                    </div>
+                    <div class="card-body">
+                        <h4>@type.TotalMinutes 分</h4>
+                    </div>
                 </div>
             </div>
-        </div>
-
-        <div class="col-md-3">
-            <div class="card text-center shadow-sm">
-                <div class="card-header bg-success text-white fw-bold">自己研鑽</div>
-                <div class="card-body">
-                    <h4>@selfImprovementTimeTotal 分</h4>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-3">
-            <div class="card text-center shadow-sm">
-                <div class="card-header bg-info text-white fw-bold">睡眠</div>
-                <div class="card-body">
-                    <h4>@sleepTimeTotal 分</h4>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-3">
-            <div class="card text-center shadow-sm">
-                <div class="card-header bg-primary text-white fw-bold">仕事</div>
-                <div class="card-body">
-                    <h4>@workTimeTotal 分</h4>
-                </div>
-            </div>
-        </div>
-
+        }
     </div>
 
+    <!-- ログ一覧 -->
     <div class="list-group shadow-sm">
         @foreach (ActivityLogs record in _activityLogs)
         {
             string startTimeDisp = record.StartDateTime.ToShortTimeString();
             string endTimeDisp = record.EndDateTime.ToShortTimeString();
-            var colorClass = GetCategoryColor(record.Category);
 
             <div class="list-group-item d-flex flex-column">
                 <div class="d-flex justify-content-between">
                     <h5 class="mb-1">
-                        <span class="badge @colorClass me-2">@record.Category</span>
+                        <span class="badge
+                                     @ColorClassBuilder.BuildBackgroundBadgeClass(
+                                                            GetColorKey(record.CategoryMaster.CategoryTypeMasterId),
+                                                            GetTextColorKey(record.CategoryMaster.CategoryTypeMasterId)
+                                    ) me-2">
+                            @record.CategoryMaster.CategoryName
+                        </span>
                         @record.PassingRoundMinutes 分
                     </h5>
                     <small>@startTimeDisp ～ @endTimeDisp</small>
@@ -90,73 +77,71 @@
 </div>
 
 @code {
+
     private DateTime targetDate = DateTime.Today;
 
-    private double entertainmentTimeTotal;
-    private double selfImprovementTimeTotal;
-    private double sleepTimeTotal;
-    private double workTimeTotal;
-
-    private List<string> entertainmentList = new();
-    private List<string> selfImprovementList = new();
-    private List<string> sleepList = new();
-    private List<string> workList = new();
     private List<ActivityLogs> _activityLogs = new();
+
+    // 集計結果用
+    private List<CategoryTypeSummary> categoryTypeStats = new();
+
+    // カテゴリタイプマスタ
+    private List<CategoryTypeMaster> categoryTypeMasterList = new();
 
     protected override async Task OnInitializedAsync()
     {
-        List<CategoryMaster>? categoryMasters = await _findMasterServices.FindCategoryMaster();
+        categoryTypeMasterList = await _findMasterServices.FindCategoryTypeMaster();
 
-        if (categoryMasters == null) return;
-
-        foreach (CategoryMaster record in categoryMasters)
-        {
-            if (record.CategoryTypeMasterId == 1)
-                entertainmentList.Add(record.CategoryName);
-            else if (record.CategoryTypeMasterId == 2)
-                selfImprovementList.Add(record.CategoryName);
-            else if (record.CategoryTypeMasterId == 3)
-                sleepList.Add(record.CategoryName);
-            else if (record.CategoryTypeMasterId == 4)
-                workList.Add(record.CategoryName);
-        }
-
-        _activityLogs = await _findActivityLogsService.FindActivityLogsByDatgetDate(targetDate);
-        CalcSumTime(_activityLogs);
+        await LoadLogsAsync();
     }
 
     private async Task ChangeTragetDate(int changeDayNum)
     {
-        entertainmentTimeTotal = selfImprovementTimeTotal = sleepTimeTotal = workTimeTotal = 0;
         targetDate = targetDate.AddDays(changeDayNum);
-        _activityLogs = await _findActivityLogsService.FindActivityLogsByDatgetDate(targetDate);
-        CalcSumTime(_activityLogs);
+        await LoadLogsAsync();
     }
 
-    private void CalcSumTime(List<ActivityLogs> activityLogs)
+    private async Task LoadLogsAsync()
     {
-        foreach (ActivityLogs record in activityLogs)
+        _activityLogs = await _findActivityLogsService.FindActivityLogsByDatgetDateAsync(targetDate);
+        CalcSumTime();
+    }
+
+    private void CalcSumTime()
+    {
+        // 初期化
+        categoryTypeStats = categoryTypeMasterList
+            .Select(t => new CategoryTypeSummary { TypeId = t.Id, TypeName = t.TypeName })
+            .ToList();
+
+        foreach (ActivityLogs record in _activityLogs)
         {
-            if (entertainmentList.Contains(record.Category ?? ""))
-                entertainmentTimeTotal += record.PassingRoundMinutes;
-            else if (selfImprovementList.Contains(record.Category ?? ""))
-                selfImprovementTimeTotal += record.PassingRoundMinutes;
-            else if (sleepList.Contains(record.Category ?? ""))
-                sleepTimeTotal += record.PassingRoundMinutes;
-            else if (workList.Contains(record.Category ?? ""))
-                workTimeTotal += record.PassingRoundMinutes;
+            var typeId = record.CategoryMaster.CategoryTypeMasterId;
+
+            var target = categoryTypeStats.FirstOrDefault(x => x.TypeId == typeId);
+            if (target != null)
+            {
+                target.TotalMinutes += record.PassingRoundMinutes;
+            }
         }
     }
 
-    private string GetCategoryColor(string? category)
+    private string GetColorKey(int typeId)
     {
-        if (category == null) return "bg-secondary";
+        return categoryTypeMasterList
+            .FirstOrDefault(x => x.Id == typeId)?.ColorKey ?? "secondary";
+    }
 
-        if (entertainmentList.Contains(category)) return "bg-warning text-dark";
-        if (selfImprovementList.Contains(category)) return "bg-success";
-        if (sleepList.Contains(category)) return "bg-info text-white";
-        if (workList.Contains(category)) return "bg-primary text-white";
+    private string GetTextColorKey(int typeId)
+    {
+        return categoryTypeMasterList
+            .FirstOrDefault(x => x.Id == typeId)?.TextColorKey ?? "white";
+    }
 
-        return "bg-secondary";
+    private class CategoryTypeSummary
+    {
+        public int TypeId { get; set; }
+        public string TypeName { get; set; } = "";
+        public double TotalMinutes { get; set; }
     }
 }

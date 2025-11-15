@@ -19,8 +19,17 @@ namespace ActivityManagementApp.Services
         {
             var userId = await _userService.GetUserIdAsync();
             if (userId == null) return null;
-            List<CategoryMaster> categoryMasters = await _context.CategoryMaster.Where(x => x.UserId == userId).ToListAsync();
+            List<CategoryMaster> categoryMasters = await _context.CategoryMaster.Where(x => x.UserId == "" || x.UserId == userId).ToListAsync();
             return categoryMasters;
+        }
+        public async Task<List<CategoryTypeMaster>> FindCategoryTypeMaster()
+        {
+            string? userId = await _userService.GetUserIdAsync();
+
+            return await _context.CategoryTypeMaster
+                .Where(x => x.UserId == "" || x.UserId == userId)
+                .OrderBy(x => x.Id)
+                .ToListAsync();
         }
     }
 }
