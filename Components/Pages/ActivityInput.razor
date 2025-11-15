@@ -4,6 +4,8 @@
 @using ActivityManagementApp.ViewModels
 @using ActivityManagementApp.Services
 @using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
 @inject ActivityInputService _activityInputService
 @inject FindMasterServices _findMasterServices
 
@@ -76,31 +78,34 @@
 
     <!-- カテゴリカード -->
     <div class="row">
-        @foreach (var group in _categoryMasters.GroupBy(c => c.CategoryType))
+        @if (_categoryMasters != null)
         {
-            <div class="col-12 col-md-6 mb-3">
-                <div class="card category-card h-100">
-                    <div class="card-header bg-light fw-bold">
-                        @GetCategoryTypeName(group.Key)
-                    </div>
-                    <div class="card-body d-flex flex-wrap">
-                        @foreach (var category in group)
-                        {
-                            var btnClass = GetCategoryButtonClass(group.Key);
-                            <button class="btn category-btn me-2 mb-2 @btnClass @(IsActive(category.CategoryName) ? "active" : "")"
-                                    @onclick="() => StartActivity(category.CategoryName)">
-                                @category.CategoryName
-                            </button>
-                        }
+            @foreach (var group in _categoryMasters.GroupBy(c => c.CategoryType))
+            {
+                <div class="col-12 col-md-6 mb-3">
+                    <div class="card category-card h-100">
+                        <div class="card-header bg-light fw-bold">
+                            @GetCategoryTypeName(group.Key)
+                        </div>
+                        <div class="card-body d-flex flex-wrap">
+                            @foreach (var category in group)
+                            {
+                                var btnClass = GetCategoryButtonClass(group.Key);
+                                <button class="btn category-btn me-2 mb-2 @btnClass @(IsActive(category.CategoryName) ? "active" : "")"
+                                        @onclick="() => StartActivity(category.CategoryName)">
+                                    @category.CategoryName
+                                </button>
+                            }
+                        </div>
                     </div>
                 </div>
-            </div>
+            }
         }
     </div>
 </div>
 
 @code {
-    private List<CategoryMaster> _categoryMasters = new();
+    private List<CategoryMaster>? _categoryMasters;
     private ActivityLogs _activityLog = new();
     private string? activityStartTimeDisp = null;
     private ActivityInputViewModel inputModel = new();

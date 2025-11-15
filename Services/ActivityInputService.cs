@@ -7,10 +7,12 @@ namespace ActivityManagementApp.Services
     public class ActivityInputService
     {
         private readonly ApplicationDbContext _context;
+        private readonly UserService _userService;
 
-        public ActivityInputService(ApplicationDbContext context)
+        public ActivityInputService(ApplicationDbContext context, UserService userService)
         {
             _context = context;
+            _userService = userService;
         }
 
         public async Task<ActivityLogs?> FindProgressActivityLogsAsync()
@@ -21,6 +23,14 @@ namespace ActivityManagementApp.Services
 
         public async Task InsertActivityLogsAsync(ActivityLogs newActivityLogs)
         {
+            var userId = await _userService.GetUserIdAsync();
+
+            if (userId == null)
+            {
+                throw new Exception("ユーザーがログインしていません。");
+            }
+
+            newActivityLogs.UserId = userId;
             _context.ActivityLogs.Add(newActivityLogs);
             await _context.SaveChangesAsync();
         }

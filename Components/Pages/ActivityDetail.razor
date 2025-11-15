@@ -3,6 +3,8 @@
 @using ActivityManagementApp.Models
 @using ActivityManagementApp.Services
 @using ActivityManagementApp.ViewModels
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
 @inject FindActivityLogsService _findActivityLogsService
 @inject ActivityInputService _activityInputService
 
@@ -72,7 +74,7 @@
     [Parameter]
     public int Id { get; set; }
 
-    private ActivityLogs _activityLog = new();
+    private ActivityLogs? _activityLog = new();
     private ActivityInputViewModel inputModel = new();
 
     private Dictionary<string, string> validationErrors = new();
@@ -99,12 +101,14 @@
     {
         validationErrors.Clear();
 
-        // ViewModel → Entity へ反映
-        _activityLog.ActivityDetailTitle = inputModel.ActivityDetailTitle;
-        _activityLog.ActivityDetail = inputModel.ActivityDetail;
+        if (_activityLog != null)
+        {
+            _activityLog.ActivityDetailTitle = inputModel.ActivityDetailTitle;
+            _activityLog.ActivityDetail = inputModel.ActivityDetail;
 
-        await _activityInputService.UpdateActivityDetailAsync(_activityLog);
-        ShowToast("内容を更新しました。", "success");
+            await _activityInputService.UpdateActivityDetailAsync(_activityLog);
+            ShowToast("内容を更新しました。", "success");
+        }
     }
 
     private void ShowValidationErrorToast(EditContext editContext)

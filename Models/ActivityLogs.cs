@@ -4,7 +4,6 @@ namespace ActivityManagementApp.Models
 {
     public class ActivityLogs
     {
-        // ★★★変更した場合はマイグレーション実行する★★★
         [Key]
         public int Id { get; set; }
         public string? Category { get; set; }
@@ -13,5 +12,6 @@ namespace ActivityManagementApp.Models
         public double PassingRoundMinutes { get; set; }
         public string? ActivityDetailTitle { get; set; }
         public string? ActivityDetail { get; set; }
+        public string UserId { get; set; } = default!;
     }
 }

@@ -7,15 +7,19 @@ namespace ActivityManagementApp.Services
     public class FindMasterServices
     {
         private readonly ApplicationDbContext _context;
+        private readonly UserService _userService;
 
-        public FindMasterServices(ApplicationDbContext context)
+        public FindMasterServices(ApplicationDbContext context, UserService userService)
         {
             _context = context;
+            _userService = userService;
         }
 
-        public async Task<List<CategoryMaster>> FindCategoryMaster()
+        public async Task<List<CategoryMaster>?> FindCategoryMaster()
         {
-            List<CategoryMaster> categoryMasters = await _context.CategoryMaster.ToListAsync();
+            var userId = await _userService.GetUserIdAsync();
+            if (userId == null) return null;
+            List<CategoryMaster> categoryMasters = await _context.CategoryMaster.Where(x => x.UserId == userId).ToListAsync();
             return categoryMasters;
         }
     }
