@@ -7,7 +7,8 @@ namespace ActivityManagementApp.Models
         [Key]
         public int Id { get; set; }
         public string CategoryName { get; set; } = "";
-        public int CategoryType { get; set; }
+        public int CategoryTypeMasterId { get; set; }
+        public CategoryTypeMaster CategoryTypeMaster { get; set; } = default!;
         public string UserId { get; set; } = default!;
     }
 }

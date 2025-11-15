@@ -8,4 +8,5 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 {
     public DbSet<ActivityLogs> ActivityLogs { get; set; }
     public DbSet<CategoryMaster> CategoryMaster { get; set; }
+    public DbSet<CategoryTypeMaster> CategoryTypeMaster { get; set; }
 }

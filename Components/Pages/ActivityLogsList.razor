@@ -111,13 +111,13 @@
 
         foreach (CategoryMaster record in categoryMasters)
         {
-            if (record.CategoryType == 1)
+            if (record.CategoryTypeMasterId == 1)
                 entertainmentList.Add(record.CategoryName);
-            else if (record.CategoryType == 2)
+            else if (record.CategoryTypeMasterId == 2)
                 selfImprovementList.Add(record.CategoryName);
-            else if (record.CategoryType == 3)
+            else if (record.CategoryTypeMasterId == 3)
                 sleepList.Add(record.CategoryName);
-            else if (record.CategoryType == 4)
+            else if (record.CategoryTypeMasterId == 4)
                 workList.Add(record.CategoryName);
         }
 

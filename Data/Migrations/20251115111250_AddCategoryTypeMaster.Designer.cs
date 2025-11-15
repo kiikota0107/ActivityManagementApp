@@ -3,16 +3,19 @@ using System;
 using ActivityManagementApp.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace ActivityManagementApp.Migrations
+namespace ActivityManagementApp.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251115111250_AddCategoryTypeMaster")]
+    partial class AddCategoryTypeMaster
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.21");
@@ -124,7 +127,7 @@ namespace ActivityManagementApp.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<int>("CategoryTypeMasterId")
+                    b.Property<int>("CategoryType")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("UserId")
@@ -132,8 +135,6 @@ namespace ActivityManagementApp.Migrations
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("CategoryTypeMasterId");
 
                     b.ToTable("CategoryMaster");
                 });
@@ -284,17 +285,6 @@ namespace ActivityManagementApp.Migrations
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("AspNetUserTokens", (string)null);
-                });
-
-            modelBuilder.Entity("ActivityManagementApp.Models.CategoryMaster", b =>
-                {
-                    b.HasOne("ActivityManagementApp.Models.CategoryTypeMaster", "CategoryTypeMaster")
-                        .WithMany()
-                        .HasForeignKey("CategoryTypeMasterId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("CategoryTypeMaster");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
