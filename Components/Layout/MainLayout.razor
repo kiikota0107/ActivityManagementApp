@@ -1,23 +1,57 @@
 ﻿@inherits LayoutComponentBase
+@using Microsoft.AspNetCore.Components.Authorization
 
-<div class="page">
-    <div class="sidebar">
-        <NavMenu />
-    </div>
+<CascadingAuthenticationState>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark px-3 shadow-sm">
 
-    <main>
-        <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
+        <!-- Brand -->
+        <a class="navbar-brand fw-bold" href="/">生活習慣記録アプリ</a>
+
+        <!-- Hamburger -->
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                data-bs-target="#navbarContent"
+                aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <!-- Navigation -->
+        <div class="collapse navbar-collapse" id="navbarContent">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+
+                <li class="nav-item">
+                    <NavLink class="nav-link" href="/activityinput" Match="NavLinkMatch.Prefix">
+                        入力画面
+                    </NavLink>
+                </li>
+
+                <li class="nav-item">
+                    <NavLink class="nav-link" href="/activitylogslist" Match="NavLinkMatch.Prefix">
+                        一覧画面
+                    </NavLink>
+                </li>
+            </ul>
+
+            <!-- Right side: Login status -->
+            <AuthorizeView>
+                <Authorized>
+                    <span class="navbar-text text-white me-3">
+                        @context.User.Identity?.Name さん
+                    </span>
+
+                    <form method="post" action="/Account/Logout" class="d-inline">
+                        <button class="btn btn-outline-light btn-sm">ログアウト</button>
+                    </form>
+                </Authorized>
+
+                <NotAuthorized>
+                    <a href="/Account/Login" class="btn btn-outline-light btn-sm me-2">ログイン</a>
+                    <a href="/Account/Register" class="btn btn-primary btn-sm">新規登録</a>
+                </NotAuthorized>
+            </AuthorizeView>
         </div>
+    </nav>
 
-        <article class="content px-4">
-            @Body
-        </article>
-    </main>
-</div>
-
-<div id="blazor-error-ui">
-    An unhandled error has occurred.
-    <a href="" class="reload">Reload</a>
-    <a class="dismiss">🗙</a>
-</div>
+    <div class="container mt-4 mb-5">
+        @Body
+    </div>
+</CascadingAuthenticationState>

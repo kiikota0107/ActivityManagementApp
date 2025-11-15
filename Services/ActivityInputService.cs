@@ -17,7 +17,14 @@ namespace ActivityManagementApp.Services
 
         public async Task<ActivityLogs?> FindProgressActivityLogsAsync()
         {
-            ActivityLogs? progressActivity = await _context.ActivityLogs.Where(x => x.EndDateTime < x.StartDateTime).FirstOrDefaultAsync();
+            var userId = await _userService.GetUserIdAsync();
+
+            if (userId == null)
+            {
+                throw new Exception("ユーザーがログインしていません。");
+            }
+
+            ActivityLogs? progressActivity = await _context.ActivityLogs.Where(x => x.UserId == userId && x.EndDateTime < x.StartDateTime).FirstOrDefaultAsync();
             return progressActivity;
         }
 

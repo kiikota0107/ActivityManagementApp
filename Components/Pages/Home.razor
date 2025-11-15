@@ -1,7 +1,47 @@
 ﻿@page "/"
+@using Microsoft.AspNetCore.Components.Authorization
 
 <PageTitle>Home</PageTitle>
 
-<h1>Hello, world!</h1>
+<AuthorizeView>
+    <NotAuthorized>
+        <div class="text-center mt-5">
+            <h1 class="mb-3">ようこそ！</h1>
+            <p class="mb-4">このアプリを利用するにはログインが必要です。</p>
 
-Welcome to your new app.
+            <a href="/Account/Login" class="btn btn-primary btn-lg me-2">ログイン</a>
+            <a href="/Account/Register" class="btn btn-outline-primary btn-lg">新規登録</a>
+        </div>
+    </NotAuthorized>
+
+    <Authorized>
+        <div class="mt-4">
+            <h1 class="mb-4">ようこそ！</h1>
+
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h4 class="card-title">アプリの使い方</h4>
+                    <p class="card-text">
+                        このアプリでは、日々の活動を簡単に記録し、後から確認することができます。
+                    </p>
+
+                    <hr />
+
+                    <h5>① 入力画面</h5>
+                    <p>現在行っている活動を記録できます。カテゴリ、開始時間、メモなどを入力してください。</p>
+
+                    <h5>② 一覧画面</h5>
+                    <p>これまでの全ての活動履歴を確認できます。日付をまたいだ記録も自動で分割されます。</p>
+
+                    <h5>③ 継続中の活動管理</h5>
+                    <p>活動の開始・停止を管理し、経過時間を自動計算します。</p>
+
+                    <div class="mt-4">
+                        <a href="/activityinput" class="btn btn-primary btn-lg me-2">入力画面へ</a>
+                        <a href="/activitylogslist" class="btn btn-outline-secondary btn-lg">一覧画面へ</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </Authorized>
+</AuthorizeView>
