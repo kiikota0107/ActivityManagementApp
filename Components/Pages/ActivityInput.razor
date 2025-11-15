@@ -113,7 +113,7 @@
 @code {
     private List<CategoryMaster>? _categoryMasters;
     private List<CategoryTypeMaster> _categoryTypeMasters = new();
-    private ActivityLogs _activityLog = new();
+    private ActivityLogs? _activityLog = new();
     private string? activityStartTimeDisp = null;
     private ActivityInputViewModel inputModel = new();
     private Dictionary<string, string> validationErrors = new();
@@ -140,6 +140,10 @@
             inputModel.ActivityDetailTitle = _activityLog.ActivityDetailTitle ?? "";
             inputModel.ActivityDetail = _activityLog.ActivityDetail ?? "";
         }
+        else
+        {
+            _activityLog = null;
+        }
     }
 
     private bool ValidateInput()
@@ -161,6 +165,8 @@
 
     private async Task ExecuteWithValidation(Func<Task> action)
     {
+        if (_activityLog == null) return;
+
         if (!ValidateInput())
         {
             ShowToast("入力エラーがあります。", "danger");
@@ -176,14 +182,14 @@
 
     private void Initialize()
     {
-        _activityLog = new ActivityLogs();
+        _activityLog = null;
         inputModel = new ActivityInputViewModel();
         activityStartTimeDisp = null;
     }
 
     private async Task StartActivity(int categoryMasterId)
     {
-        if (_activityLog.EndDateTime <= _activityLog.StartDateTime)
+        if (_activityLog != null && _activityLog.EndDateTime <= _activityLog.StartDateTime)
         {
             ShowToast("進行中のタスクがあるため、新規タスクを作成できません。", "danger");
             return;
@@ -191,6 +197,7 @@
 
         if (categoryMasterId <= 0) return;
 
+        _activityLog = new ActivityLogs();
         _activityLog.StartDateTime = DateTime.Now;
         _activityLog.CategoryMasterId = categoryMasterId;
         activityStartTimeDisp = _activityLog.StartDateTime.ToShortTimeString();
@@ -201,12 +208,14 @@
 
     private async Task UpdateProgressActivityLogsTempAsync()
     {
+        if (_activityLog == null) return;
         await _activityInputService.UpdateProgressActivityLogsTempAsync(_activityLog);
         ShowToast("一時保存しました。", "success");
     }
 
     private async Task UpdateProgressActivityLogsAsync()
     {
+        if (_activityLog == null) return;
         await _activityInputService.UpdateProgressActivityLogsAsync(_activityLog);
         Initialize();
         ShowToast("タスクを終了しました。", "info");
@@ -214,6 +223,7 @@
 
     private async Task DeleteProgressActivityLogsAsync()
     {
+        if (_activityLog == null) return;
         await _activityInputService.DeleteProgressActivityLogsAsync(_activityLog.Id);
         Initialize();
         ShowToast("タスクを削除しました。", "danger");
