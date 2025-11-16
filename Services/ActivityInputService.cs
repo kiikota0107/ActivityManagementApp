@@ -24,7 +24,11 @@ namespace ActivityManagementApp.Services
                 throw new Exception("ユーザーがログインしていません。");
             }
 
-            ActivityLogs? progressActivity = await _context.ActivityLogs.Where(x => x.UserId == userId && x.EndDateTime < x.StartDateTime).FirstOrDefaultAsync();
+            ActivityLogs? progressActivity = await _context.ActivityLogs
+                                                .Include(x => x.CategoryMaster)
+                                                .ThenInclude(x => x!.CategoryTypeMaster)
+                                                .Where(x => x.UserId == userId && x.EndDateTime < x.StartDateTime)
+                                                .FirstOrDefaultAsync();
             return progressActivity;
         }
 
@@ -72,6 +76,7 @@ namespace ActivityManagementApp.Services
                     newDaysActivity.CategoryMasterId = progressActivity.CategoryMasterId;
                     newDaysActivity.StartDateTime = DateTime.Today;
                     newDaysActivity.EndDateTime = DateTime.Now;
+                    newDaysActivity.UserId = progressActivity.UserId;
 
                     string customFormatStartTimeForNewDays = newDaysActivity.StartDateTime.ToShortTimeString();
                     string customFormatEndTimeForNewDays = newDaysActivity.EndDateTime.ToShortTimeString();

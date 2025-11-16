@@ -27,10 +27,10 @@
     <!-- カテゴリ情報 -->
     <div class="badge
                 @ColorClassBuilder.BuildBackgroundBadgeClass(
-                                    GetColorKey(activity.CategoryMaster.CategoryTypeMasterId),
-                                    GetTextColorKey(activity.CategoryMaster.CategoryTypeMasterId)
+                                    GetColorKey(activity.CategoryMaster?.CategoryTypeMasterId),
+                                    GetTextColorKey(activity.CategoryMaster?.CategoryTypeMasterId)
               )">
-        @activity.CategoryMaster.CategoryName
+        @(activity.CategoryMaster?.CategoryName ?? "(削除済みカテゴリ)")
     </div>
 
     <div class="text-muted mb-3">
@@ -98,12 +98,12 @@
         NavigationManager.NavigateTo("/activitylogslist");
     }
 
-    private string GetColorKey(int typeId)
+    private string GetColorKey(int? typeId)
     {
         return _categoryTypeMasters.FirstOrDefault(x => x.Id == typeId)?.ColorKey ?? "secondary";
     }
 
-    private string GetTextColorKey(int typeId)
+    private string GetTextColorKey(int? typeId)
     {
         return _categoryTypeMasters.FirstOrDefault(x => x.Id == typeId)?.TextColorKey ?? "white";
     }

@@ -1,0 +1,50 @@
+﻿@page "/categorysettings"
+@rendermode InteractiveServer
+
+<PageTitle>カテゴリ管理</PageTitle>
+
+<div class="container mt-4">
+    <h1 class="mb-3">カテゴリ管理</h1>
+
+    <!-- タブ（UIのみ） -->
+    <ul class="nav nav-tabs mb-3">
+        <li class="nav-item">
+            <button class="nav-link @(activeTab == "type" ? "active" : "")"
+                    @onclick="@(() => ChangeTab("type"))">
+                カテゴリタイプ
+            </button>
+        </li>
+
+        <li class="nav-item">
+            <button class="nav-link @(activeTab == "category" ? "active" : "")"
+                    @onclick="@(() => ChangeTab("category"))">
+                カテゴリ
+            </button>
+        </li>
+    </ul>
+
+    <!-- タブ切り替え領域 -->
+    @if (activeTab == "type")
+    {
+        <div>
+            <h4>カテゴリタイプ管理</h4>
+            <p class="text-muted">（ここにカテゴリタイプのフォームと一覧が入ります）</p>
+        </div>
+    }
+    else if (activeTab == "category")
+    {
+        <div>
+            <h4>カテゴリ管理</h4>
+            <p class="text-muted">（ここにカテゴリのフォームと一覧が入ります）</p>
+        </div>
+    }
+</div>
+
+@code {
+    private string activeTab = "type"; // デフォルトはカテゴリタイプリスト
+
+    private void ChangeTab(string tab)
+    {
+        activeTab = tab;
+    }
+}

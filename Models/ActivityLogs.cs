@@ -8,7 +8,7 @@ namespace ActivityManagementApp.Models
         public int Id { get; set; }
         [Required]
         public int CategoryMasterId { get; set; }
-        public CategoryMaster CategoryMaster { get; set; } = default!;
+        public CategoryMaster? CategoryMaster { get; set; }
         public DateTime StartDateTime { get; set; }
         public DateTime EndDateTime { get; set; }
         public double PassingRoundMinutes { get; set; }

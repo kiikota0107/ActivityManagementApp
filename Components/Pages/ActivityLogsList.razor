@@ -24,7 +24,7 @@
     <!-- 集計エリア -->
     <div class="row mb-4">
 
-        @foreach (var type in categoryTypeStats)
+        @foreach (var type in categoryTypeStats.OrderBy(t => t.SortOrder))
         {
             <div class="col-md-3">
                 <div class="card text-center shadow-sm">
@@ -54,11 +54,11 @@
                 <div class="d-flex justify-content-between">
                     <h5 class="mb-1">
                         <span class="badge
-                                     @ColorClassBuilder.BuildBackgroundBadgeClass(
-                                                            GetColorKey(record.CategoryMaster.CategoryTypeMasterId),
-                                                            GetTextColorKey(record.CategoryMaster.CategoryTypeMasterId)
-                                    ) me-2">
-                            @record.CategoryMaster.CategoryName
+                                         @ColorClassBuilder.BuildBackgroundBadgeClass(
+                                              GetColorKey(record.CategoryMaster?.CategoryTypeMasterId),
+                                              GetTextColorKey(record.CategoryMaster?.CategoryTypeMasterId)
+                                          ) me-2">
+                            @(record.CategoryMaster?.CategoryName ?? "(削除済みカテゴリ)")
                         </span>
                         @record.PassingRoundMinutes 分
                     </h5>
@@ -111,12 +111,17 @@
     {
         // 初期化
         categoryTypeStats = categoryTypeMasterList
-            .Select(t => new CategoryTypeSummary { TypeId = t.Id, TypeName = t.TypeName })
+            .Select(t => new CategoryTypeSummary
+            {
+                TypeId = t.Id,
+                TypeName = t.TypeName,
+                SortOrder = t.SortOrder
+            })
             .ToList();
 
         foreach (ActivityLogs record in _activityLogs)
         {
-            var typeId = record.CategoryMaster.CategoryTypeMasterId;
+            var typeId = record.CategoryMaster?.CategoryTypeMasterId;
 
             var target = categoryTypeStats.FirstOrDefault(x => x.TypeId == typeId);
             if (target != null)
@@ -126,13 +131,13 @@
         }
     }
 
-    private string GetColorKey(int typeId)
+    private string GetColorKey(int? typeId)
     {
         return categoryTypeMasterList
             .FirstOrDefault(x => x.Id == typeId)?.ColorKey ?? "secondary";
     }
 
-    private string GetTextColorKey(int typeId)
+    private string GetTextColorKey(int? typeId)
     {
         return categoryTypeMasterList
             .FirstOrDefault(x => x.Id == typeId)?.TextColorKey ?? "white";
@@ -143,5 +148,6 @@
         public int TypeId { get; set; }
         public string TypeName { get; set; } = "";
         public double TotalMinutes { get; set; }
+        public int SortOrder { get; set; }
     }
 }
