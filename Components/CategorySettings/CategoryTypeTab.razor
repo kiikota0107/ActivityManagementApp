@@ -1,9 +1,19 @@
 ﻿@using ActivityManagementApp.Models
 @using ActivityManagementApp.Services
+@using ActivityManagementApp.ViewModels
 @inject FindMasterServices _findMasterServices
 @inject CategorySettingsService _categorySettingsService
+@inject IJSRuntime JS
 
 <h4 class="mb-3">カテゴリタイプ管理</h4>
+
+<!-- ▼ エラーメッセージ表示 -->
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-danger">
+        @errorMessage
+    </div>
+}
 
 <!-- ★ 編集フォーム or 一覧 の切り替え -->
 @if (isEditing)
@@ -22,11 +32,11 @@ else
     <table class="table table-hover">
         <thead>
             <tr>
-                <ht>名前</ht>
-                <ht>背景色</ht>
-                <ht>文字色</ht>
-                <ht>並び順</ht>
-                <ht></ht>
+                <th>名前</th>
+                <th>背景色</th>
+                <th>文字色</th>
+                <th>並び順</th>
+                <th></th>
             </tr>
         </thead>
         <tbody>
@@ -55,8 +65,10 @@ else
     private List<CategoryTypeMaster> categoryTypes = new();
     private bool isEditing = false;
 
-    // フォームに渡すモデル
-    private CategoryTypeMaster editingModel = new();
+    private string? errorMessage;
+
+    // フォームに渡す ViewModel
+    private CategoryTypeEditViewModel editingModel = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -65,39 +77,55 @@ else
 
     private async Task LoadCategoryTypesAsync()
     {
-        categoryTypes = await _findMasterServices.FindCategoryTypeMaster();
+        categoryTypes = (await _findMasterServices.FindCategoryTypeMaster())
+                            .OrderBy(t => t.SortOrder).ToList();
     }
 
     private void StartCreate()
     {
-        editingModel = new CategoryTypeMaster();
+        errorMessage = null;
+        editingModel = new CategoryTypeEditViewModel();
         isEditing = true;
     }
 
     private void StartEdit(CategoryTypeMaster type)
     {
-        // ★ 不快コピーにして編集が一覧に即反映されないようにする
-        editingModel = new CategoryTypeMaster
-            {
-                Id = type.Id,
-                TypeName = type.TypeName,
-                ColorKey = type.ColorKey,
-                TextColorKey = type.TextColorKey,
-                SortOrder = type.SortOrder
-            };
+        errorMessage = null;
+
+        // ★ Entity → ViewModel へ変換（深いコピー）
+        editingModel = new CategoryTypeEditViewModel
+        {
+            Id = type.Id,
+            TypeName = type.TypeName,
+            ColorKey = type.ColorKey,
+            TextColorKey = type.TextColorKey,
+            SortOrder = type.SortOrder
+        };
 
         isEditing = true;
     }
 
-    private async Task HandleSave(CategoryTypeMaster model)
+    private async Task HandleSave(CategoryTypeEditViewModel model)
     {
-        if (model.Id == 0)
+        errorMessage = null;
+
+        // ★ ViewModel → Entity へ変換
+        var entity = new CategoryTypeMaster
         {
-            await _categorySettingsService.InsertCategoryTypeAsync(model);
+            Id = model.Id,
+            TypeName = model.TypeName,
+            ColorKey = model.ColorKey,
+            TextColorKey = model.TextColorKey,
+            SortOrder = model.SortOrder
+        };
+
+        if (entity.Id == 0)
+        {
+            await _categorySettingsService.InsertCategoryTypeAsync(entity);
         }
         else
         {
-            await _categorySettingsService.UpdateCategoryTypeAsync(model);
+            await _categorySettingsService.UpdateCategoryTypeAsync(entity);
         }
 
         await LoadCategoryTypesAsync();
@@ -106,12 +134,27 @@ else
 
     private Task HandleCancel()
     {
+        errorMessage = null;
         isEditing = false;
         return Task.CompletedTask;
     }
 
     private async Task Delete(CategoryTypeMaster target)
     {
+        errorMessage = null;
+
+        bool confirm = await JS.InvokeAsync<bool>("confirm",
+            $"{target.TypeName} を削除しますか？");
+
+        if (!confirm) return;
+
+        bool success = await _categorySettingsService.DeleteCategoryTypeAsync(target.Id);
+
+        if (!success)
+        {
+            errorMessage = $"カテゴリタイプ「{target.TypeName}」は使用されているため削除できません。";
+        }
+
         await _categorySettingsService.DeleteCategoryTypeAsync(target.Id);
         await LoadCategoryTypesAsync();
     }

@@ -26,6 +26,8 @@ builder.Services.AddScoped<FindMasterServices>();
 
 builder.Services.AddScoped<FindActivityLogsService>();
 
+builder.Services.AddScoped<CategorySettingsService>();
+
 builder.Services.AddCascadingAuthenticationState();
 
 builder.Services.AddScoped<IdentityUserAccessor>();

@@ -1,5 +1,79 @@
-﻿<h3>CategoryForm</h3>
+﻿@using ActivityManagementApp.Models
+@using ActivityManagementApp.ViewModels
+
+<EditForm Model="Model" OnValidSubmit="HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary class="text-danger" />
+
+    <!-- カテゴリ名 -->
+    <div class="mb-3">
+        <label class="form-label">カテゴリ名</label>
+        <InputText class="form-control" @bind-Value="Model.CategoryName" />
+        <ValidationMessage For="() => Model.CategoryName" class="text-danger" />
+    </div>
+
+    <!-- カテゴリタイプ（プルダウン） -->
+    <div class="mb-3">
+        <label class="form-label">カテゴリタイプ</label>
+
+        <select class="form-select" @bind="Model.CategoryTypeMasterId">
+            <option value="">-- 選択してください --</option>
+            @foreach (var type in CategoryTypes)
+            {
+                <option value="@type.Id">@type.TypeName</option>
+            }
+        </select>
+        <ValidationMessage For="() => Model.CategoryTypeMasterId" class="text-danger" />
+
+        <!-- 選択された色のプレビュー -->
+        @if (Model.CategoryTypeMasterId > 0)
+        {
+            var selected = CategoryTypes.FirstOrDefault(x => x.Id == Model.CategoryTypeMasterId);
+            if (selected != null)
+            {
+                <div class="mt-2">
+                    <span class="badge bg-@selected.ColorKey text-@selected.TextColorKey">
+                        @selected.TypeName（色プレビュー）
+                    </span>
+                </div>
+            }
+        }
+    </div>
+
+    <!-- 並び順 -->
+    <div class="mb-3">
+        <label class="form-label">表示順</label>
+        <InputNumber class="form-control" @bind-Value="Model.SortOrder" />
+        <ValidationMessage For="() => Model.SortOrder" class="text-danger" />
+    </div>
+
+    <!-- ボタン -->
+    <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary">保存</button>
+        <button type="button" class="btn btn-secondary" @onclick="Cancel">キャンセル</button>
+    </div>
+</EditForm>
 
 @code {
+    // フォームに渡すビューモデル
+    [Parameter] public CategoryEditViewModel Model { get; set; } = new();
 
+    // プルダウンで使用するカテゴリタイプ一覧
+    [Parameter] public List<CategoryTypeMaster> CategoryTypes { get; set; } = new();
+
+    // 保存イベント（親に通知）
+    [Parameter] public EventCallback<CategoryEditViewModel> OnSave { get; set; }
+
+    // キャンセルイベント（親に通知）
+    [Parameter] public EventCallback OnCancel { get; set; }
+
+    private async Task HandleValidSubmit()
+    {
+        await OnSave.InvokeAsync(Model);
+    }
+
+    private async Task Cancel()
+    {
+        await OnCancel.InvokeAsync();
+    }
 }

@@ -1,5 +1,149 @@
-﻿<h3>CategoryTab</h3>
+﻿@using ActivityManagementApp.Models
+@using ActivityManagementApp.Services
+@using ActivityManagementApp.ViewModels
+@inject FindMasterServices _findMasterServices
+@inject CategorySettingsService _categorySettingsService
+@inject IJSRuntime JS
+
+<h4 class="mb-3">カテゴリ管理</h4>
+
+@if (isEditing)
+{
+    <CategoryForm Model="editingModel"
+                  CategoryTypes="categoryTypeList"
+                  OnSave="HandleSave"
+                  OnCancel="HandleCancel" />
+}
+else
+{
+    <button class="btn btn-primary mb-3" @onclick="StartCreate">
+        ＋ 新規カテゴリ
+    </button>
+
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th>カテゴリ名</th>
+                <th>カテゴリタイプ</th>
+                <th>並び順</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var cat in categories)
+            {
+                <tr>
+                    <td>@cat.CategoryName</td>
+                    <td>@GetTypeName(cat.CategoryTypeMasterId)</td>
+                    <td>@cat.SortOrder</td>
+                    <td class="text-end">
+                        <button class="btn btn-sm btn-outline-primary me-2"
+                                @onclick="() => StartEdit(cat)">
+                            編集
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger"
+                                @onclick="() => Delete(cat)">
+                            削除
+                        </button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
 
 @code {
+    // --- 一覧用 Entity ---
+    private List<CategoryMaster> categories = new();
 
+    // --- カテゴリタイプ一覧（プルダウン用） ---
+    private List<CategoryTypeMaster> categoryTypeList = new();
+
+    private bool isEditing = false;
+
+    // --- 編集フォームに渡す ViewModel ---
+    private CategoryEditViewModel editingModel = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        categoryTypeList = (await _findMasterServices.FindCategoryTypeMaster())
+                            .OrderBy(t => t.SortOrder)
+                            .ToList();
+
+        categories = (await _findMasterServices.FindCategoryMaster())!
+                            .OrderBy(c => c.SortOrder)
+                            .ToList();
+    }
+
+    private string GetTypeName(int typeId)
+    {
+        return categoryTypeList
+            .FirstOrDefault(x => x.Id == typeId)?.TypeName ?? "(削除済み)";
+    }
+
+    private void StartCreate()
+    {
+        editingModel = new CategoryEditViewModel();
+        isEditing = true;
+    }
+
+    private void StartEdit(CategoryMaster cat)
+    {
+        // ★ Entity → ViewModel（深いコピー）
+        editingModel = new CategoryEditViewModel
+        {
+            Id = cat.Id,
+            CategoryName = cat.CategoryName,
+            CategoryTypeMasterId = cat.CategoryTypeMasterId,
+            SortOrder = cat.SortOrder
+        };
+
+        isEditing = true;
+    }
+
+    private async Task HandleSave(CategoryEditViewModel model)
+    {
+        // ★ ViewModel → Entity 変換
+        var entity = new CategoryMaster
+        {
+            Id = model.Id,
+            CategoryName = model.CategoryName,
+            CategoryTypeMasterId = model.CategoryTypeMasterId,
+            SortOrder = model.SortOrder
+        };
+
+        if (entity.Id == 0)
+        {
+            await _categorySettingsService.InsertCategoryAsync(entity);
+        }
+        else
+        {
+            await _categorySettingsService.UpdateCategoryAsync(entity);
+        }
+
+        await LoadAsync();
+        isEditing = false;
+    }
+
+    private Task HandleCancel()
+    {
+        isEditing = false;
+        return Task.CompletedTask;
+    }
+
+    private async Task Delete(CategoryMaster target)
+    {
+        bool confirm = await JS.InvokeAsync<bool>("confirm",
+            $"{target.CategoryName} を削除しますか？（過去ログのカテゴリは削除済み扱いになります）");
+
+        if (!confirm) return;
+
+        await _categorySettingsService.DeleteCategoryAsync(target.Id);
+        await LoadAsync();
+    }
 }

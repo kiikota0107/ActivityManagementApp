@@ -1,4 +1,5 @@
 ﻿@using ActivityManagementApp.Models
+@using ActivityManagementApp.ViewModels
 @using System.ComponentModel.DataAnnotations
 
 <EditForm Model="Model" OnValidSubmit="HandleValidSubmit">
@@ -42,10 +43,10 @@
 
 @code {
     // --- 外部から設定される値 ---
-    [Parameter] public CategoryTypeMaster Model { get; set; } = new();
+    [Parameter] public CategoryTypeEditViewModel Model { get; set; } = new();
 
     // 保存イベント（親に通知）
-    [Parameter] public EventCallback<CategoryTypeMaster> OnSave { get; set; }
+    [Parameter] public EventCallback<CategoryTypeEditViewModel> OnSave { get; set; }
 
     // キャンセルイベント（親に通知）
     [Parameter] public EventCallback OnCancel { get; set; }

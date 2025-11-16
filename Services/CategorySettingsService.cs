@@ -101,6 +101,9 @@ namespace ActivityManagementApp.Services
             {
                 log.CategoryMasterId = null;
             }
+
+            _context.CategoryMaster.Remove(entity);
+            await _context.SaveChangesAsync();
         }
     }
 }
