@@ -50,7 +50,10 @@
                         d-flex justify-content-between align-items-center">
             <div>
                 現在進行中：<strong>@(_activityLog.CategoryMaster?.CategoryName ?? "(削除済みカテゴリ)")</strong>
-                <small class="text-muted">（開始：@activityStartTimeDisp）</small>
+                <span class="@ColorClassBuilder.BuildBackgroundBadgeClass(
+                                                    GetColorKey(_activityLog.CategoryMaster?.CategoryTypeMasterId),
+                                                    GetTextColorKey(_activityLog.CategoryMaster?.CategoryTypeMasterId)
+                 )">（開始：@activityStartTimeDisp）</span>
             </div>
         </div>
             <div class="card-body">
