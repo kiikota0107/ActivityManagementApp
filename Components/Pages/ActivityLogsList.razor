@@ -2,6 +2,8 @@
 @rendermode InteractiveServer
 @using ActivityManagementApp.Models
 @using ActivityManagementApp.Services
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
 @inject FindActivityLogsService _findActivityLogsService
 @inject FindMasterServices _findMasterServices
 

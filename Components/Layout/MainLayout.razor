@@ -1,5 +1,7 @@
 ﻿@inherits LayoutComponentBase
 @using Microsoft.AspNetCore.Components.Authorization
+@inject IHttpClientFactory HttpFactory
+@inject NavigationManager Nav
 
 <CascadingAuthenticationState>
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark px-3 shadow-sm">
@@ -45,7 +47,9 @@
                     </span>
 
                     <form class="d-inline">
-                        <a href="/Account/Login" class="btn btn-outline-light btn-sm">ログアウト</a>
+                        <a href="/Account/Logout" class="btn btn-outline-light btn-sm">
+                            ログアウト
+                        </a>
                     </form>
                 </Authorized>
 
