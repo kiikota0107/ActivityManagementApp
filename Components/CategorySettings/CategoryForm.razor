@@ -40,13 +40,6 @@
         }
     </div>
 
-    <!-- 並び順 -->
-    <div class="mb-3">
-        <label class="form-label">表示順</label>
-        <InputNumber class="form-control" @bind-Value="Model.SortOrder" />
-        <ValidationMessage For="() => Model.SortOrder" class="text-danger" />
-    </div>
-
     <!-- ボタン -->
     <div class="d-flex gap-2">
         <button type="submit" class="btn btn-primary">保存</button>

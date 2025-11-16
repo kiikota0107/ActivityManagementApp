@@ -23,7 +23,15 @@ namespace ActivityManagementApp.Services
         public async Task InsertCategoryTypeAsync(CategoryTypeMaster input)
         {
             var userId = await _userService.GetUserIdAsync();
+
+            int maxOrder = await _context.CategoryTypeMaster
+                .Where(x => x.UserId == userId)
+                .Select(x => x.SortOrder)
+                .DefaultIfEmpty(0)
+                .MaxAsync();
+
             input.UserId = userId!;
+            input.SortOrder = maxOrder + 1;
 
             await _context.CategoryTypeMaster.AddAsync(input);
             await _context.SaveChangesAsync();
@@ -46,15 +54,29 @@ namespace ActivityManagementApp.Services
 
         public async Task<bool> DeleteCategoryTypeAsync(int id)
         {
-            // 子カテゴリの存在チェック
             bool hasChildren = await _context.CategoryMaster.AnyAsync(c => c.CategoryTypeMasterId == id);
 
-            if (hasChildren) return false; // 呼び出しもとで「削除不可メッセージ」を出す
+            if (hasChildren) return false;
 
             var entity = await _context.CategoryTypeMaster.FindAsync(id);
             if (entity == null) return false;
 
             _context.CategoryTypeMaster.Remove(entity);
+            await _context.SaveChangesAsync();
+
+            var userId = await _userService.GetUserIdAsync();
+
+            var list = await _context.CategoryTypeMaster
+                .Where(x => x.UserId == userId)
+                .OrderBy(x => x.SortOrder)
+                .ToListAsync();
+
+            int order = 1;
+            foreach (var record in list)
+            {
+                record.SortOrder = order++;
+            }
+
             await _context.SaveChangesAsync();
 
             return true;
@@ -68,6 +90,14 @@ namespace ActivityManagementApp.Services
         {
             var userId = await _userService.GetUserIdAsync();
             input.UserId = userId!;
+
+            int maxOrder = await _context.CategoryMaster
+                .Where(x => x.UserId == userId)
+                .Select(x => x.SortOrder)
+                .DefaultIfEmpty(0)
+                .MaxAsync();
+
+            input.SortOrder = maxOrder + 1;
 
             await _context.CategoryMaster.AddAsync(input);
             await _context.SaveChangesAsync();
@@ -92,7 +122,8 @@ namespace ActivityManagementApp.Services
             var entity = await _context.CategoryMaster.FindAsync(id);
             if (entity == null) return;
 
-            // ★ ActivityLogs → CategoryMasterId を null にする
+            int typeId = entity.CategoryTypeMasterId;
+
             var logs = await _context.ActivityLogs
                             .Where(x => x.CategoryMasterId == id)
                             .ToListAsync();
@@ -103,6 +134,21 @@ namespace ActivityManagementApp.Services
             }
 
             _context.CategoryMaster.Remove(entity);
+            await _context.SaveChangesAsync();
+
+            var userId = await _userService.GetUserIdAsync();
+
+            var list = await _context.CategoryMaster
+                .Where(x => x.UserId == userId)
+                .OrderBy(x => x.SortOrder)
+                .ToListAsync();
+
+            int order = 1;
+            foreach (var record in list)
+            {
+                record.SortOrder = order++;
+            }
+
             await _context.SaveChangesAsync();
         }
     }
