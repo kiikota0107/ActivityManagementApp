@@ -1,0 +1,62 @@
+﻿@using ActivityManagementApp.Models
+@using System.ComponentModel.DataAnnotations
+
+<EditForm Model="Model" OnValidSubmit="HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary class="text-danger" />
+
+    <!-- カテゴリタイプ名 -->
+    <div class="mb-3">
+        <label class="form-label">カテゴリタイプ名</label>
+        <InputText class="form-control" @bind-Value="Model.TypeName" />
+        <ValidationMessage For="() => Model.TypeName" class="text-danger" />
+    </div>
+
+    <!-- 背景色キー -->
+    <div class="mb-3">
+        <label class="form-label">背景色</label>
+        <InputText class="form-control" @bind-Value="Model.ColorKey" placeholder="例: primary / warning / info" />
+        <ValidationMessage For="() => Model.ColorKey" class="text-danger" />
+    </div>
+
+    <!-- 文字色キー -->
+    <div class="mb-3">
+        <label class="form-label">文字色</label>
+        <InputText class="form-control" @bind-Value="Model.TextColorKey" placeholder="例: white / dark" />
+        <ValidationMessage For="() => Model.TextColorKey" class="text-danger" />
+    </div>
+
+    <!-- 並び順 -->
+    <div class="mb-3">
+        <label class="form-label">表示順</label>
+        <InputNumber class="form-control" @bind-Value="Model.SortOrder" />
+        <ValidationMessage For="() => Model.SortOrder" class="text-danger" />
+    </div>
+
+    <!-- ボタン　-->
+    <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary">保存</button>
+        <button type="botton" class="btn btn-secondary" @onclick="Cancel">キャンセル</button>
+    </div>
+</EditForm>
+
+@code {
+    // --- 外部から設定される値 ---
+    [Parameter] public CategoryTypeMaster Model { get; set; } = new();
+
+    // 保存イベント（親に通知）
+    [Parameter] public EventCallback<CategoryTypeMaster> OnSave { get; set; }
+
+    // キャンセルイベント（親に通知）
+    [Parameter] public EventCallback OnCancel { get; set; }
+
+    private async Task HandleValidSubmit()
+    {
+        await OnSave.InvokeAsync(Model);
+    }
+
+    private async Task Cancel()
+    {
+        await OnCancel.InvokeAsync();
+    }
+}

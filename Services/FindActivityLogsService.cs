@@ -22,7 +22,7 @@ namespace ActivityManagementApp.Services
 
             ActivityLogs? activityLogs = await _context.ActivityLogs
                                         .Include(x => x.CategoryMaster)
-                                            .ThenInclude(cm => cm.CategoryTypeMaster)
+                                            .ThenInclude(cm => cm!.CategoryTypeMaster)
                                         .Where(x => x.UserId == userId)
                                         .FirstOrDefaultAsync(x => x.Id == Id);
             return activityLogs;
@@ -38,7 +38,7 @@ namespace ActivityManagementApp.Services
 
             List<ActivityLogs> activityLogs = await _context.ActivityLogs
                                                 .Include(x => x.CategoryMaster)
-                                                    .ThenInclude(cm => cm.CategoryTypeMaster)
+                                                    .ThenInclude(cm => cm!.CategoryTypeMaster)
                                                 .Where(x => x.UserId == userId
                                                          && x.StartDateTime.Date == targetDate.Date
                                                          && x.EndDateTime != DateTime.MinValue)

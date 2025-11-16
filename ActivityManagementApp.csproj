@@ -8,13 +8,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Components\新しいフォルダー\**" />
-    <Content Remove="Components\新しいフォルダー\**" />
-    <EmbeddedResource Remove="Components\新しいフォルダー\**" />
-    <None Remove="Components\新しいフォルダー\**" />
-  </ItemGroup>
-
-  <ItemGroup>
     <None Update="Data\app.db" CopyToOutputDirectory="PreserveNewest" ExcludeFromSingleFile="true" />
   </ItemGroup>
 
