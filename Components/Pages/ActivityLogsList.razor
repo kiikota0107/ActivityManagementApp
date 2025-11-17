@@ -79,8 +79,8 @@
 </div>
 
 @code {
-
-    private DateTime targetDate = DateTime.Today;
+    private DateTime targetDate = TimeZoneInfo.ConvertTime(DateTime.UtcNow, 
+                                    TimeZoneInfo.FindSystemTimeZoneById("Asia/Tokyo")).Date;
 
     private List<ActivityLogs> _activityLogs = new();
 
