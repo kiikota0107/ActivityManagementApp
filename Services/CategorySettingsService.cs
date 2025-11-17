@@ -26,9 +26,7 @@ namespace ActivityManagementApp.Services
 
             int maxOrder = await _context.CategoryTypeMaster
                 .Where(x => x.UserId == userId)
-                .Select(x => x.SortOrder)
-                .DefaultIfEmpty(0)
-                .MaxAsync();
+                .MaxAsync(x => (int?)x.SortOrder) ?? 0;
 
             input.UserId = userId!;
             input.SortOrder = maxOrder + 1;
@@ -93,9 +91,7 @@ namespace ActivityManagementApp.Services
 
             int maxOrder = await _context.CategoryMaster
                 .Where(x => x.UserId == userId)
-                .Select(x => x.SortOrder)
-                .DefaultIfEmpty(0)
-                .MaxAsync();
+                .MaxAsync(x => (int?)x.SortOrder) ?? 0;
 
             input.SortOrder = maxOrder + 1;
 
