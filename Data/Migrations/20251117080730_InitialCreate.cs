@@ -3,10 +3,10 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace ActivityManagementApp.Migrations
+namespace ActivityManagementApp.Data.Migrations
 {
     /// <inheritdoc />
-    public partial class CreateIdentitySchema : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -48,6 +48,23 @@ namespace ActivityManagementApp.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_AspNetUsers", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "CategoryTypeMaster",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    SortOrder = table.Column<int>(type: "INTEGER", nullable: false),
+                    TypeName = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false),
+                    UserId = table.Column<string>(type: "TEXT", nullable: false),
+                    ColorKey = table.Column<string>(type: "TEXT", nullable: false),
+                    TextColorKey = table.Column<string>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CategoryTypeMaster", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -156,6 +173,58 @@ namespace ActivityManagementApp.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "CategoryMaster",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    SortOrder = table.Column<int>(type: "INTEGER", nullable: false),
+                    CategoryName = table.Column<string>(type: "TEXT", nullable: false),
+                    CategoryTypeMasterId = table.Column<int>(type: "INTEGER", nullable: false),
+                    UserId = table.Column<string>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CategoryMaster", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_CategoryMaster_CategoryTypeMaster_CategoryTypeMasterId",
+                        column: x => x.CategoryTypeMasterId,
+                        principalTable: "CategoryTypeMaster",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ActivityLogs",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    CategoryMasterId = table.Column<int>(type: "INTEGER", nullable: true),
+                    StartDateTime = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    EndDateTime = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    PassingRoundMinutes = table.Column<double>(type: "REAL", nullable: false),
+                    ActivityDetailTitle = table.Column<string>(type: "TEXT", nullable: true),
+                    ActivityDetail = table.Column<string>(type: "TEXT", nullable: true),
+                    UserId = table.Column<string>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ActivityLogs", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ActivityLogs_CategoryMaster_CategoryMasterId",
+                        column: x => x.CategoryMasterId,
+                        principalTable: "CategoryMaster",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
+                });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ActivityLogs_CategoryMasterId",
+                table: "ActivityLogs",
+                column: "CategoryMasterId");
+
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
                 table: "AspNetRoleClaims",
@@ -192,11 +261,19 @@ namespace ActivityManagementApp.Migrations
                 table: "AspNetUsers",
                 column: "NormalizedUserName",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CategoryMaster_CategoryTypeMasterId",
+                table: "CategoryMaster",
+                column: "CategoryTypeMasterId");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "ActivityLogs");
+
             migrationBuilder.DropTable(
                 name: "AspNetRoleClaims");
 
@@ -213,10 +290,16 @@ namespace ActivityManagementApp.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
+                name: "CategoryMaster");
+
+            migrationBuilder.DropTable(
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");
+
+            migrationBuilder.DropTable(
+                name: "CategoryTypeMaster");
         }
     }
 }

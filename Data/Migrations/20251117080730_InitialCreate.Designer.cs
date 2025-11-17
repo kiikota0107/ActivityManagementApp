@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ActivityManagementApp.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251109001728_activityDetail")]
-    partial class activityDetail
+    [Migration("20251117080730_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -90,8 +90,14 @@ namespace ActivityManagementApp.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("Category")
+                    b.Property<string>("ActivityDetail")
                         .HasColumnType("TEXT");
+
+                    b.Property<string>("ActivityDetailTitle")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("CategoryMasterId")
+                        .HasColumnType("INTEGER");
 
                     b.Property<DateTime>("EndDateTime")
                         .HasColumnType("TEXT");
@@ -102,10 +108,13 @@ namespace ActivityManagementApp.Data.Migrations
                     b.Property<DateTime>("StartDateTime")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("activityDetail")
+                    b.Property<string>("UserId")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CategoryMasterId");
 
                     b.ToTable("ActivityLogs");
                 });
@@ -117,14 +126,55 @@ namespace ActivityManagementApp.Data.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("CategoryName")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<int>("CategoryType")
+                    b.Property<int>("CategoryTypeMasterId")
                         .HasColumnType("INTEGER");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CategoryTypeMasterId");
+
                     b.ToTable("CategoryMaster");
+                });
+
+            modelBuilder.Entity("ActivityManagementApp.Models.CategoryTypeMaster", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("ColorKey")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("TextColorKey")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("TypeName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("CategoryTypeMaster");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -253,6 +303,27 @@ namespace ActivityManagementApp.Data.Migrations
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("AspNetUserTokens", (string)null);
+                });
+
+            modelBuilder.Entity("ActivityManagementApp.Models.ActivityLogs", b =>
+                {
+                    b.HasOne("ActivityManagementApp.Models.CategoryMaster", "CategoryMaster")
+                        .WithMany()
+                        .HasForeignKey("CategoryMasterId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("CategoryMaster");
+                });
+
+            modelBuilder.Entity("ActivityManagementApp.Models.CategoryMaster", b =>
+                {
+                    b.HasOne("ActivityManagementApp.Models.CategoryTypeMaster", "CategoryTypeMaster")
+                        .WithMany()
+                        .HasForeignKey("CategoryTypeMasterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("CategoryTypeMaster");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
