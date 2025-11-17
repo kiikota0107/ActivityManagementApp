@@ -203,7 +203,8 @@
         if (categoryMasterId <= 0) return;
 
         _activityLog = new ActivityLogs();
-        _activityLog.StartDateTime = DateTime.Now;
+        var jst = TimeZoneInfo.FindSystemTimeZoneById("Asia/Tokyo");
+        _activityLog.StartDateTime = TimeZoneInfo.ConvertTime(DateTime.UtcNow, jst);
         _activityLog.CategoryMasterId = categoryMasterId;
         activityStartTimeDisp = _activityLog.StartDateTime.ToShortTimeString();
 

@@ -64,7 +64,8 @@ namespace ActivityManagementApp.Services
 
             if (progressActivity != null)
             {
-                progressActivity.EndDateTime = DateTime.Now;
+                var jst = TimeZoneInfo.FindSystemTimeZoneById("Asia/Tokyo");
+                progressActivity.EndDateTime = TimeZoneInfo.ConvertTime(DateTime.UtcNow, jst);
 
                 if (progressActivity.StartDateTime.Date != progressActivity.EndDateTime.Date)
                 {
@@ -75,7 +76,7 @@ namespace ActivityManagementApp.Services
                     ActivityLogs newDaysActivity = new ActivityLogs();
                     newDaysActivity.CategoryMasterId = progressActivity.CategoryMasterId;
                     newDaysActivity.StartDateTime = DateTime.Today;
-                    newDaysActivity.EndDateTime = DateTime.Now;
+                    newDaysActivity.EndDateTime = TimeZoneInfo.ConvertTime(DateTime.UtcNow, jst);
                     newDaysActivity.UserId = progressActivity.UserId;
 
                     string customFormatStartTimeForNewDays = newDaysActivity.StartDateTime.ToShortTimeString();
