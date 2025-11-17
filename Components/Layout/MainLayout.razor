@@ -46,10 +46,12 @@
                         @context.User.Identity?.Name さん
                     </span>
 
-                    <form class="d-inline">
-                        <a href="/Account/Logout" class="btn btn-outline-light btn-sm">
+                    <form method="post" action="/account/logout" class="d-inline">
+                        <AntiforgeryToken />
+                        <input type="hidden" name="returnUrl" value="/account/login" />
+                        <button type="submit" class="btn btn-outline-light btn-sm">
                             ログアウト
-                        </a>
+                        </button>
                     </form>
                 </Authorized>
 
