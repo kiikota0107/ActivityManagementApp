@@ -1,6 +1,7 @@
 ﻿@using ActivityManagementApp.Models
 @using ActivityManagementApp.Services
 @using ActivityManagementApp.ViewModels
+@using Microsoft.AspNetCore.Components.Web
 @inject FindMasterServices _findMasterServices
 @inject CategorySettingsService _categorySettingsService
 @inject IJSRuntime JS
@@ -42,7 +43,11 @@ else
         <tbody>
             @foreach (var type in categoryTypes)
             {
-                <tr>
+                <tr draggable="true"
+                    @ondragstart="() => draggingId = type.Id"
+                    @ondragover="OnDragOver"
+                    @ondragover:preventDefault="true"
+                    @ondrop="() => OnDrop(type.Id)">
                     <td>@type.TypeName</td>
                     <td>@type.ColorKey</td>
                     <td>@type.TextColorKey</td>
@@ -59,11 +64,17 @@ else
             }
         </tbody>
     </table>
+
+    <button class="btn btn-success mt-2"
+            @onclick="SaveSortOrder">
+        並び順を保存
+    </button>
 }
 
 @code {
     private List<CategoryTypeMaster> categoryTypes = new();
     private bool isEditing = false;
+    private int? draggingId = null;
 
     private string? errorMessage;
 
@@ -157,5 +168,35 @@ else
 
         await _categorySettingsService.DeleteCategoryTypeAsync(target.Id);
         await LoadCategoryTypesAsync();
+    }
+
+    private void OnDrop(int targetId)
+    {
+        if (draggingId == null || draggingId == targetId) return;
+
+        var draggedRecord = categoryTypes.FirstOrDefault(x => x.Id == draggingId);
+        var targetRecord = categoryTypes.FirstOrDefault(x => x.Id == targetId);
+
+        if (draggedRecord == null || targetRecord == null) return;
+
+        int oldIndex = categoryTypes.IndexOf(draggedRecord);
+        int newIndex = categoryTypes.IndexOf(targetRecord);
+
+        categoryTypes.RemoveAt(oldIndex);
+        categoryTypes.Insert(newIndex, draggedRecord);
+
+        draggingId = null;
+    }
+
+    private async Task SaveSortOrder()
+    {
+        var orderedIds = categoryTypes.Select(x => x.Id).ToList();
+        await _categorySettingsService.UpdateCategoryTypeSortOrdersAsync(orderedIds);
+        await LoadCategoryTypesAsync();
+    }
+
+    private void OnDragOver(DragEventArgs e)
+    {
+        
     }
 }

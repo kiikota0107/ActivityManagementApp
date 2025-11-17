@@ -1,6 +1,7 @@
 ﻿@using ActivityManagementApp.Models
 @using ActivityManagementApp.Services
 @using ActivityManagementApp.ViewModels
+@using Microsoft.AspNetCore.Components.Web;
 @inject FindMasterServices _findMasterServices
 @inject CategorySettingsService _categorySettingsService
 @inject IJSRuntime JS
@@ -32,7 +33,11 @@ else
         <tbody>
             @foreach (var cat in categories)
             {
-                <tr>
+                <tr draggable="true"
+                    @ondragstart="() => draggingId = cat.Id"
+                    @ondragover="OnDragOver"
+                    @ondragover:preventDefault="true"
+                    @ondrop="() => OnDrop(cat.Id)">
                     <td>@cat.CategoryName</td>
                     <td>@GetTypeName(cat.CategoryTypeMasterId)</td>
                     <td>@cat.SortOrder</td>
@@ -50,6 +55,11 @@ else
             }
         </tbody>
     </table>
+
+    <button class="btn btn-success mt-2"
+            @onclick="SaveSortOrder">
+        並び順を保存
+    </button>
 }
 
 @code {
@@ -60,6 +70,8 @@ else
     private List<CategoryTypeMaster> categoryTypeList = new();
 
     private bool isEditing = false;
+
+    private int? draggingId = null;
 
     // --- 編集フォームに渡す ViewModel ---
     private CategoryEditViewModel editingModel = new();
@@ -145,5 +157,35 @@ else
 
         await _categorySettingsService.DeleteCategoryAsync(target.Id);
         await LoadAsync();
+    }
+
+    private void OnDrop(int targetId)
+    {
+        if (draggingId == null || draggingId == targetId) return;
+
+        var draggedRecord = categories.FirstOrDefault(x => x.Id == draggingId);
+        var targetRecord = categories.FirstOrDefault(x => x.Id == targetId);
+
+        if (draggedRecord == null || targetRecord == null) return;
+
+        int oldIndex = categories.IndexOf(draggedRecord);
+        int newIndex = categories.IndexOf(targetRecord);
+
+        categories.RemoveAt(oldIndex);
+        categories.Insert(newIndex, targetRecord);
+
+        draggingId = null;
+    }
+
+    private async Task SaveSortOrder()
+    {
+        var orderdIds = categories.Select(x => x.Id).ToList();
+        await _categorySettingsService.UpdateCategorySortOrdersAsync(orderdIds);
+        await LoadAsync();
+    }
+
+    private void OnDragOver(DragEventArgs e)
+    {
+        
     }
 }

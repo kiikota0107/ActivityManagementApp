@@ -151,5 +151,48 @@ namespace ActivityManagementApp.Services
 
             await _context.SaveChangesAsync();
         }
+
+        public async Task UpdateCategoryTypeSortOrdersAsync(List<int> orderdIds)
+        {
+            var userId = await _userService.GetUserIdAsync();
+
+            var list = await _context.CategoryTypeMaster
+                                        .Where(x => x.UserId == userId)
+                                        .ToListAsync();
+
+            int order = 1;
+            foreach (var id in orderdIds)
+            {
+                var item = list.FirstOrDefault(x => x.Id == id);
+                if (item != null)
+                {
+                    item.SortOrder = order++;
+                }
+            }
+
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task UpdateCategorySortOrdersAsync(List<int> orderdIds)
+        {
+            var userId = await _userService.GetUserIdAsync();
+
+            var list = await _context.CategoryMaster
+                                .Where(x => x.UserId == userId)
+                                .ToListAsync();
+
+            int order = 1;
+            foreach (var id in orderdIds)
+            {
+                var item = list.FirstOrDefault(x => x.Id == id);
+
+                if (item != null)
+                {
+                    item.SortOrder = order++;
+                }
+            }
+
+            await _context.SaveChangesAsync();
+        }
     }
 }
