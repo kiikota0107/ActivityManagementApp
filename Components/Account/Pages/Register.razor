@@ -4,12 +4,14 @@
 @using Microsoft.AspNetCore.Identity
 @using ActivityManagementApp.Data
 @using ActivityManagementApp.ViewModels
+@using ActivityManagementApp.Services
 
 
 @inject UserManager<ApplicationUser> UserManager
 @inject SignInManager<ApplicationUser> SignInManager
 @inject ILogger<Register> Logger
 @inject IdentityRedirectManager RedirectManager
+@inject InitialCategoryRegistrationService InitialCategoryService
 
 <PageTitle>ユーザー登録</PageTitle>
 
@@ -79,6 +81,7 @@
         if (result.Succeeded)
         {
             Logger.LogInformation("User created a new account.");
+            await InitialCategoryService.CreateForUserAsync(user.Id);
 
             await SignInManager.SignInAsync(user, isPersistent: false);
             RedirectManager.RedirectTo(ReturnUrl);
