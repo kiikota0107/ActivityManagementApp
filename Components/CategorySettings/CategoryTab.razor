@@ -33,13 +33,22 @@ else
         <tbody>
             @foreach (var cat in categories)
             {
+                var type = typeMap.GetValueOrDefault(cat.CategoryTypeMasterId);
+
                 <tr draggable="true"
                     @ondragstart="() => draggingId = cat.Id"
                     @ondragover="OnDragOver"
                     @ondragover:preventDefault="true"
                     @ondrop="() => OnDrop(cat.Id)">
                     <td>@cat.CategoryName</td>
-                    <td>@GetTypeName(cat.CategoryTypeMasterId)</td>
+                    <td>
+                        <span class="badge
+                                 @ColorClassBuilder.BuildBackgroundBadgeClass(
+                                                                    type?.ColorKey ?? "secondary",
+                                                                    type?.TextColorKey ?? "white")">
+                            @GetTypeName(cat.CategoryTypeMasterId)
+                        </span>
+                    </td>
                     <td>@cat.SortOrder</td>
                     <td class="text-end">
                         <button class="btn btn-sm btn-outline-primary me-2"
@@ -63,17 +72,13 @@ else
 }
 
 @code {
-    // --- 一覧用 Entity ---
     private List<CategoryMaster> categories = new();
-
-    // --- カテゴリタイプ一覧（プルダウン用） ---
     private List<CategoryTypeMaster> categoryTypeList = new();
+    private Dictionary<int, CategoryTypeMaster> typeMap = new();
 
     private bool isEditing = false;
-
     private int? draggingId = null;
 
-    // --- 編集フォームに渡す ViewModel ---
     private CategoryEditViewModel editingModel = new();
 
     protected override async Task OnInitializedAsync()
@@ -90,12 +95,30 @@ else
         categories = (await _findMasterServices.FindCategoryMaster())!
                             .OrderBy(c => c.SortOrder)
                             .ToList();
+
+        categoryTypeList = (await _findMasterServices.FindCategoryTypeMaster())
+                            .OrderBy(t => t.SortOrder)
+                            .ToList();
+
+        typeMap = categoryTypeList.ToDictionary(t => t.Id);
     }
 
     private string GetTypeName(int typeId)
     {
         return categoryTypeList
             .FirstOrDefault(x => x.Id == typeId)?.TypeName ?? "(削除済み)";
+    }
+
+    private string GetTypeColorKey(int typeId)
+    {
+        return categoryTypeList
+            .FirstOrDefault(x => x.Id == typeId)?.ColorKey ?? "";
+    }
+
+    private string GetTypeTextColorKey(int typeId)
+    {
+        return categoryTypeList
+            .FirstOrDefault(x => x.Id == typeId)?.TextColorKey ?? "";
     }
 
     private void StartCreate()
