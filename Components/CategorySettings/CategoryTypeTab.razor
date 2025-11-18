@@ -34,8 +34,7 @@ else
         <thead>
             <tr>
                 <th>名前</th>
-                <th>背景色</th>
-                <th>文字色</th>
+                <th>プレビュー</th>
                 <th>並び順</th>
                 <th></th>
             </tr>
@@ -49,8 +48,12 @@ else
                     @ondragover:preventDefault="true"
                     @ondrop="() => OnDrop(type.Id)">
                     <td>@type.TypeName</td>
-                    <td>@type.ColorKey</td>
-                    <td>@type.TextColorKey</td>
+                    <td>
+                        <span class="badge
+                         @ColorClassBuilder.BuildBackgroundBadgeClass(type.ColorKey, type.TextColorKey)">
+                            @type.TypeName
+                        </span>
+                    </td>
                     <td>@type.SortOrder</td>
                     <td class="text-end">
                         <button class="btn btn-sm btn-outline-primary me-2" @onclick="() => StartEdit(type)">

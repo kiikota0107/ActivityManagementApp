@@ -1,5 +1,6 @@
 ﻿@using ActivityManagementApp.Models
 @using ActivityManagementApp.ViewModels
+@using ActivityManagementApp.Services
 @using System.ComponentModel.DataAnnotations
 
 <EditForm Model="Model" OnValidSubmit="HandleValidSubmit">
@@ -13,24 +14,42 @@
         <ValidationMessage For="() => Model.TypeName" class="text-danger" />
     </div>
 
-    <!-- 背景色キー -->
+    <!-- 背景色キー（セレクトボックス） -->
     <div class="mb-3">
         <label class="form-label">背景色</label>
-        <InputText class="form-control" @bind-Value="Model.ColorKey" placeholder="例: primary / warning / info" />
+        <InputSelect class="form-control"
+                     @bind-Value="Model.ColorKey"
+                     @bind-Value:after="OnColorChanged">
+            <option value="">-- 背景色を選択 --</option>
+            @foreach (var option in colorOptions)
+            {
+                <option value="@option.Value">@option.Label</option>
+            }
+        </InputSelect>
         <ValidationMessage For="() => Model.ColorKey" class="text-danger" />
     </div>
 
-    <!-- 文字色キー -->
-    <div class="mb-3">
-        <label class="form-label">文字色</label>
-        <InputText class="form-control" @bind-Value="Model.TextColorKey" placeholder="例: white / dark" />
-        <ValidationMessage For="() => Model.TextColorKey" class="text-danger" />
-    </div>
+    <!-- プレビュー -->
+    @if (!string.IsNullOrEmpty(Model.ColorKey))
+    {
+        <div class="mb-3">
+            <label class="form-label">プレビュー</label>
+            <div>
+                <span class="badge
+                 @ColorClassBuilder.BuildBackgroundBadgeClass(
+                      Model.ColorKey,
+                                   Model.TextColorKey
+                               )">
+                    @(!string.IsNullOrWhiteSpace(Model.TypeName) ? Model.TypeName : "プレビュー")
+                </span>
+            </div>
+        </div>
+    }
 
     <!-- ボタン　-->
     <div class="d-flex gap-2">
         <button type="submit" class="btn btn-primary">保存</button>
-        <button type="botton" class="btn btn-secondary" @onclick="Cancel">キャンセル</button>
+        <button type="button" class="btn btn-secondary" @onclick="Cancel">キャンセル</button>
     </div>
 </EditForm>
 
@@ -44,6 +63,27 @@
     // キャンセルイベント（親に通知）
     [Parameter] public EventCallback OnCancel { get; set; }
 
+    // 背景色の選択肢
+    private readonly List<(string Value, string Label)> colorOptions = new()
+    {
+        ("primary",   "Primary（青）"),
+        ("secondary", "Secondary（グレー）"),
+        ("success",   "Success（緑）"),
+        ("danger",    "Danger（赤）"),
+        ("warning",   "Warning（黄）"),
+        ("info",      "Info（水色）"),
+        ("light",     "Light（薄グレー）"),
+        ("dark",      "Dark（黒）"),
+    };
+
+    protected override void OnParametersSet()
+    {
+        if (!string.IsNullOrEmpty(Model.ColorKey) && string.IsNullOrEmpty(Model.TextColorKey))
+        {
+            UpdateTextColorKey();
+        }
+    }
+
     private async Task HandleValidSubmit()
     {
         await OnSave.InvokeAsync(Model);
@@ -52,5 +92,25 @@
     private async Task Cancel()
     {
         await OnCancel.InvokeAsync();
+    }
+
+    private void OnColorChanged()
+    {
+        UpdateTextColorKey();
+    }
+
+    private void UpdateTextColorKey()
+    {
+        if (string.IsNullOrEmpty(Model.ColorKey))
+        {
+            Model.TextColorKey = "";
+            return;
+        }
+
+        var lightBackgroundKeys = new[] { "warning", "light" };
+
+        Model.TextColorKey = lightBackgroundKeys.Contains(Model.ColorKey)
+            ? "dark"
+            : "white";
     }
 }
