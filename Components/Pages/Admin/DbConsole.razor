@@ -1,0 +1,139 @@
+﻿@page "/admin/db-console"
+@rendermode InteractiveServer
+@using Microsoft.Data.Sqlite
+@using ActivityManagementApp.Data
+@using Microsoft.AspNetCore.Authorization
+@inject IConfiguration Config
+@inject NavigationManager Nav
+@inject AuthenticationStateProvider AuthStateProvider
+
+@attribute [Authorize]
+
+<h3>DB 管理コンソール（管理者専用）</h3>
+
+@if (!isAdmin)
+{
+    <p class="text-danger">アクセス権限がありません。</p>
+    return;
+}
+
+<div class="mb-3">
+    <textarea class="form-control" rows="4" @bind="sqlInput"></textarea>
+</div>
+
+<button class="btn btn-primary me-2" @onclick="ExecuteSql">SQL 実行</button>
+<button class="btn btn-secondary" @onclick="LoadPreset_StartEndError">Start > End 不整合の抽出</button>
+
+@if (!string.IsNullOrWhiteSpace(message))
+{
+    <p class="mt-3">@message</p>
+}
+
+@if (resultTable != null)
+{
+    <table class="table table-bordered table-sm mt-3">
+        <thead>
+            <tr>
+                @foreach (var col in resultColumns!)
+                {
+                    <th>@col</th>
+                }
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var row in resultTable)
+            {
+                <tr>
+                    @foreach (var col in resultColumns)
+                    {
+                        <td>@(row[col]?.ToString())</td>
+                    }
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private string sqlInput = "";
+    private string? message;
+    private List<Dictionary<string, object>>? resultTable;
+    private List<string>? resultColumns;
+
+    private bool isAdmin = false;
+    private readonly string adminEmail = "kiikota0107@gmail.com";
+
+    protected override async Task OnInitializedAsync()
+    {
+        var auth = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = auth.User;
+
+        isAdmin = user.Identity!.IsAuthenticated && user.Identity.Name == adminEmail;
+    }
+
+    private bool IsSqlSafe(string sql)
+    {
+        var prohibited = new[] { "DROP", "ALTER", "TRUNCATE", "CREATE", "ATTACH", "DETACH" };
+        return !prohibited.Any(p => sql.ToUpper().Contains(p));
+    }
+
+    private async Task ExecuteSql()
+    {
+        message = "";
+        resultTable = null;
+
+        if (!IsSqlSafe(sqlInput))
+        {
+            message = "禁止された SQL が含まれています。";
+            return;
+        }
+
+        try
+        {
+            var connStr = Config.GetConnectionString("DefaultConnection");
+            using var conn = new SqliteConnection(connStr);
+            await conn.OpenAsync();
+
+            using var cmd = new SqliteCommand(sqlInput, conn);
+
+            if (sqlInput.TrimStart().StartsWith("SELECT", StringComparison.OrdinalIgnoreCase))
+            {
+                using var reader = await cmd.ExecuteReaderAsync();
+                resultColumns = Enumerable.Range(0, reader.FieldCount)
+                                            .Select(reader.GetName)
+                                            .ToList();
+
+                resultTable = new List<Dictionary<string, object>>();
+
+                while (await reader.ReadAsync())
+                {
+                    var row = new Dictionary<string, object>();
+                    foreach (var col in resultColumns)
+                    {
+                        row[col] = reader[col];
+                    }
+                    resultTable.Add(row);
+                }
+
+                message = $"SELECT 実行 ({resultTable.Count}件) ";
+            }
+            else
+            {
+                var affected = await cmd.ExecuteNonQueryAsync();
+                message = $"{affected} 行に影響しました。";
+            }
+        }
+        catch (Exception ex)
+        {
+            message = $"エラー：{ex.Message}";
+        }
+    }
+
+    private void LoadPreset_StartEndError()
+    {
+        sqlInput = @"SELECT Id, StartDateTime, EndDateTime, Title
+                     FROM ActivityLogs
+                     WHERE StartDateTime > EndDateTime
+                     ORDER BY Id;";
+    }
+}
