@@ -172,7 +172,7 @@ else
         int newIndex = categories.IndexOf(targetRecord);
 
         categories.RemoveAt(oldIndex);
-        categories.Insert(newIndex, targetRecord);
+        categories.Insert(newIndex, draggedRecord);
 
         draggingId = null;
     }
