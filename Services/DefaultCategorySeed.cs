@@ -16,7 +16,7 @@
             {
                 TypeName = "生活",
                 ColorKey = "secondary",
-                TextColorKey = "white",
+                TextColorKey = ColorPalette.GetTextColor("secondary"),
                 Categories = new()
                 {
                     "食事", "歯磨き", "食器洗い", "入浴",
@@ -28,7 +28,7 @@
             {
                 TypeName = "娯楽",
                 ColorKey = "warning",
-                TextColorKey = "dark",
+                TextColorKey = ColorPalette.GetTextColor("warning"),
                 Categories = new()
                 {
                     "SNS", "動画", "ゲーム", "ネット"
@@ -38,7 +38,7 @@
             {
                 TypeName = "成長",
                 ColorKey = "success",
-                TextColorKey = "white",
+                TextColorKey = ColorPalette.GetTextColor("success"),
                 Categories = new()
                 {
                     "勉強", "運動"
@@ -48,7 +48,7 @@
             {
                 TypeName = "仕事",
                 ColorKey = "primary",
-                TextColorKey = "white",
+                TextColorKey = ColorPalette.GetTextColor("primary"),
                 Categories = new()
                 {
                     "業務", "回顧"
@@ -58,7 +58,7 @@
             {
                 TypeName = "睡眠",
                 ColorKey = "info",
-                TextColorKey = "dark",
+                TextColorKey = ColorPalette.GetTextColor("info"),
                 Categories = new()
                 {
                     "就寝", "昼寝"
@@ -68,7 +68,7 @@
             {
                 TypeName = "外出",
                 ColorKey = "danger",
-                TextColorKey = "white",
+                TextColorKey = ColorPalette.GetTextColor("danger"),
                 Categories = new()
                 {
                     "散歩", "旅行", "ドライブ", "ショッピング", "外食"

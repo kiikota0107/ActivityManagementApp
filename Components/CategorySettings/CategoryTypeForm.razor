@@ -23,7 +23,7 @@
             <option value="">-- 背景色を選択 --</option>
             @foreach (var option in colorOptions)
             {
-                <option value="@option.Value">@option.Label</option>
+                <option value="@option.Key">@option.Label</option>
             }
         </InputSelect>
         <ValidationMessage For="() => Model.ColorKey" class="text-danger" />
@@ -54,27 +54,13 @@
 </EditForm>
 
 @code {
-    // --- 外部から設定される値 ---
     [Parameter] public CategoryTypeEditViewModel Model { get; set; } = new();
 
-    // 保存イベント（親に通知）
     [Parameter] public EventCallback<CategoryTypeEditViewModel> OnSave { get; set; }
 
-    // キャンセルイベント（親に通知）
     [Parameter] public EventCallback OnCancel { get; set; }
 
-    // 背景色の選択肢
-    private readonly List<(string Value, string Label)> colorOptions = new()
-    {
-        ("primary",   "Primary（青）"),
-        ("secondary", "Secondary（グレー）"),
-        ("success",   "Success（緑）"),
-        ("danger",    "Danger（赤）"),
-        ("warning",   "Warning（黄）"),
-        ("info",      "Info（水色）"),
-        ("light",     "Light（薄グレー）"),
-        ("dark",      "Dark（黒）"),
-    };
+    private IEnumerable<ColorDefinition> colorOptions = ColorPalette.All;
 
     protected override void OnParametersSet()
     {
@@ -101,16 +87,6 @@
 
     private void UpdateTextColorKey()
     {
-        if (string.IsNullOrEmpty(Model.ColorKey))
-        {
-            Model.TextColorKey = "";
-            return;
-        }
-
-        var lightBackgroundKeys = new[] { "warning", "light" };
-
-        Model.TextColorKey = lightBackgroundKeys.Contains(Model.ColorKey)
-            ? "dark"
-            : "white";
+        Model.TextColorKey = ColorPalette.GetTextColor(Model.ColorKey);
     }
 }
