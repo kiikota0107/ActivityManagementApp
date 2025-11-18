@@ -15,8 +15,8 @@
             new DefaultCategoryGroup
             {
                 TypeName = "生活",
-                ColorKey = "info",
-                TextColorKey = "dark",
+                ColorKey = "secondary",
+                TextColorKey = "white",
                 Categories = new()
                 {
                     "食事", "歯磨き", "食器洗い", "入浴",
@@ -57,8 +57,8 @@
             new DefaultCategoryGroup
             {
                 TypeName = "睡眠",
-                ColorKey = "secondary",
-                TextColorKey = "white",
+                ColorKey = "info",
+                TextColorKey = "dark",
                 Categories = new()
                 {
                     "就寝", "昼寝"
