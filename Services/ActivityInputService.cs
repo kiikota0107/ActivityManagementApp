@@ -8,11 +8,13 @@ namespace ActivityManagementApp.Services
     {
         private readonly ApplicationDbContext _context;
         private readonly UserService _userService;
+        private readonly TimeZoneService _timeZoneService;
 
-        public ActivityInputService(ApplicationDbContext context, UserService userService)
+        public ActivityInputService(ApplicationDbContext context, UserService userService, TimeZoneService timeZoneService)
         {
             _context = context;
             _userService = userService;
+            _timeZoneService = timeZoneService;
         }
 
         public async Task<ActivityLogs?> FindProgressActivityLogsAsync()
@@ -65,7 +67,7 @@ namespace ActivityManagementApp.Services
             if (progressActivity != null)
             {
                 var jst = TimeZoneInfo.FindSystemTimeZoneById("Asia/Tokyo");
-                progressActivity.EndDateTime = TimeZoneInfo.ConvertTime(DateTime.UtcNow, jst);
+                progressActivity.EndDateTime = _timeZoneService.NowJst;
 
                 if (progressActivity.StartDateTime.Date != progressActivity.EndDateTime.Date)
                 {
@@ -75,8 +77,8 @@ namespace ActivityManagementApp.Services
                     // 開始日が跨いだ日付のレコードを新規作成
                     ActivityLogs newDaysActivity = new ActivityLogs();
                     newDaysActivity.CategoryMasterId = progressActivity.CategoryMasterId;
-                    newDaysActivity.StartDateTime = TimeZoneInfo.ConvertTime(DateTime.UtcNow, jst).Date;
-                    newDaysActivity.EndDateTime = TimeZoneInfo.ConvertTime(DateTime.UtcNow, jst);
+                    newDaysActivity.StartDateTime = _timeZoneService.NowJst.Date;
+                    newDaysActivity.EndDateTime = _timeZoneService.NowJst;
                     newDaysActivity.UserId = progressActivity.UserId;
 
                     string customFormatStartTimeForNewDays = newDaysActivity.StartDateTime.ToShortTimeString();

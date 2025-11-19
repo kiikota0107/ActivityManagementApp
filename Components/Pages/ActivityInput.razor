@@ -8,6 +8,7 @@
 @attribute [Authorize]
 @inject ActivityInputService _activityInputService
 @inject FindMasterServices _findMasterServices
+@inject TimeZoneService _timeZoneService
 
 <PageTitle>入力画面</PageTitle>
 
@@ -204,7 +205,7 @@
 
         _activityLog = new ActivityLogs();
         var jst = TimeZoneInfo.FindSystemTimeZoneById("Asia/Tokyo");
-        _activityLog.StartDateTime = TimeZoneInfo.ConvertTime(DateTime.UtcNow, jst);
+        _activityLog.StartDateTime = _timeZoneService.NowJst;
         _activityLog.CategoryMasterId = categoryMasterId;
         activityStartTimeDisp = _activityLog.StartDateTime.ToShortTimeString();
 
@@ -237,7 +238,7 @@
 
     private async void ShowToast(string message, string type)
     {
-        toastMessage = $"[{DateTime.Now:HH:mm}] {message}";
+        toastMessage = $"[{_timeZoneService.NowJst:HH:mm}] {message}";
         toastType = type;
 
         await Task.Delay(4000);

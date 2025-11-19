@@ -6,6 +6,7 @@
 @attribute [Authorize]
 @inject FindActivityLogsService _findActivityLogsService
 @inject FindMasterServices _findMasterServices
+@inject TimeZoneService _timeZoneService
 
 <PageTitle>一覧画面</PageTitle>
 
@@ -79,8 +80,7 @@
 </div>
 
 @code {
-    private DateTime targetDate = TimeZoneInfo.ConvertTime(DateTime.UtcNow, 
-                                    TimeZoneInfo.FindSystemTimeZoneById("Asia/Tokyo")).Date;
+    private DateTime targetDate;
 
     private List<ActivityLogs> _activityLogs = new();
 
@@ -92,6 +92,8 @@
 
     protected override async Task OnInitializedAsync()
     {
+        targetDate = _timeZoneService.NowJst.Date;
+
         categoryTypeMasterList = await _findMasterServices.FindCategoryTypeMaster();
 
         await LoadLogsAsync();

@@ -40,6 +40,8 @@ builder.Services.AddScoped<UserService>();
 
 builder.Services.AddScoped<InitialCategoryRegistrationService>();
 
+builder.Services.AddScoped<TimeZoneService>();
+
 builder.Services.AddAuthentication(options =>
     {
         options.DefaultScheme = IdentityConstants.ApplicationScheme;
