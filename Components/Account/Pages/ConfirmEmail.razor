@@ -4,13 +4,18 @@
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.AspNetCore.WebUtilities
 @using ActivityManagementApp.Data
+@using Microsoft.AspNetCore.Authorization
 
 @inject UserManager<ApplicationUser> UserManager
 @inject IdentityRedirectManager RedirectManager
+@inject NavigationManager NavigationManager
 
-<PageTitle>Confirm email</PageTitle>
+@attribute [AllowAnonymous]
 
-<h1>Confirm email</h1>
+<PageTitle>メール認証</PageTitle>
+
+<h3 class="mb-3">メール認証</h3>
+
 <StatusMessage Message="@statusMessage" />
 
 @code {
@@ -27,22 +32,34 @@
 
     protected override async Task OnInitializedAsync()
     {
-        if (UserId is null || Code is null)
+        if (string.IsNullOrEmpty(UserId) || string.IsNullOrEmpty(Code))
         {
-            RedirectManager.RedirectTo("");
+            statusMessage = "認証コードが無効です。";
+            return;
         }
 
         var user = await UserManager.FindByIdAsync(UserId);
+
         if (user is null)
         {
             HttpContext.Response.StatusCode = StatusCodes.Status404NotFound;
-            statusMessage = $"Error loading user with ID {UserId}";
+            statusMessage = $"指定されたユーザーが見つかりません。（ID: {UserId}）";
+            return;
+        }
+
+        var decoded = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(Code));
+        var result = await UserManager.ConfirmEmailAsync(user, decoded);
+
+        if (result.Succeeded)
+        {
+            statusMessage = "メールアドレスの認証が完了しました。4秒後にログイン画面へ移動します。";
+
+            await Task.Delay(4000);
+            NavigationManager.NavigateTo("/Account/Login");
         }
         else
         {
-            var code = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(Code));
-            var result = await UserManager.ConfirmEmailAsync(user, code);
-            statusMessage = result.Succeeded ? "Thank you for confirming your email." : "Error confirming your email.";
+            statusMessage = "メール認証に失敗しました。リンクが無効か期限切れの可能性があります。";
         }
     }
 }

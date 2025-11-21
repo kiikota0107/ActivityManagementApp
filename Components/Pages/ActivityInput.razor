@@ -5,10 +5,10 @@
 @using ActivityManagementApp.Services
 @using System.ComponentModel.DataAnnotations
 @using Microsoft.AspNetCore.Authorization
-@attribute [Authorize]
 @inject ActivityInputService _activityInputService
 @inject FindMasterServices _findMasterServices
 @inject TimeZoneService _timeZoneService
+@attribute [Authorize]
 
 <PageTitle>入力画面</PageTitle>
 

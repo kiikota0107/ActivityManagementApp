@@ -487,3 +487,5 @@ $RECYCLE.BIN/
 Data/*.db
 Data/*.db-shm
 Data/*.db-wal
+
+appsettings.Development.json

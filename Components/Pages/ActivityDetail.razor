@@ -4,12 +4,11 @@
 @using ActivityManagementApp.ViewModels
 @using ActivityManagementApp.Services
 @using Microsoft.AspNetCore.Authorization
-@attribute [Authorize]
-
 @inject ActivityInputService _activityInputService
 @inject FindActivityLogsService _findActivityLogsService
 @inject FindMasterServices _findMasterServices
 @inject NavigationManager NavigationManager
+@attribute [Authorize]
 
 <PageTitle>詳細編集</PageTitle>
 

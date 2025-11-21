@@ -3,10 +3,10 @@
 @using ActivityManagementApp.Models
 @using ActivityManagementApp.Services
 @using Microsoft.AspNetCore.Authorization
-@attribute [Authorize]
 @inject FindActivityLogsService _findActivityLogsService
 @inject FindMasterServices _findMasterServices
 @inject TimeZoneService _timeZoneService
+@attribute [Authorize]
 
 <PageTitle>一覧画面</PageTitle>
 

@@ -18,28 +18,37 @@
 
         <!-- Navigation -->
         <div class="collapse navbar-collapse" id="navbarContent">
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
 
-                <li class="nav-item">
-                    <NavLink class="nav-link" href="/activityinput" Match="NavLinkMatch.Prefix">
-                        入力画面
-                    </NavLink>
-                </li>
+            <AuthorizeView>
+                <Authorized>
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
 
-                <li class="nav-item">
-                    <NavLink class="nav-link" href="/activitylogslist" Match="NavLinkMatch.Prefix">
-                        一覧画面
-                    </NavLink>
-                </li>
+                        <li class="nav-item">
+                            <NavLink class="nav-link" href="/activityinput" Match="NavLinkMatch.Prefix">
+                                入力画面
+                            </NavLink>
+                        </li>
 
-                <li class="nav-item">
-                    <NavLink class="nav-link" href="/categorysettings" Match="NavLinkMatch.Prefix">
-                        カテゴリ管理
-                    </NavLink>
-                </li>
-            </ul>
+                        <li class="nav-item">
+                            <NavLink class="nav-link" href="/activitylogslist" Match="NavLinkMatch.Prefix">
+                                一覧画面
+                            </NavLink>
+                        </li>
 
-            <!-- Right side: Login status -->
+                        <li class="nav-item">
+                            <NavLink class="nav-link" href="/categorysettings" Match="NavLinkMatch.Prefix">
+                                カテゴリ管理
+                            </NavLink>
+                        </li>
+
+                    </ul>
+                </Authorized>
+
+                <NotAuthorized>
+                </NotAuthorized>
+            </AuthorizeView>
+
+            <!-- Right side login/logout -->
             <AuthorizeView>
                 <Authorized>
                     <span class="navbar-text text-white me-3">
@@ -60,6 +69,7 @@
                     <a href="/Account/Register" class="btn btn-primary btn-sm">新規登録</a>
                 </NotAuthorized>
             </AuthorizeView>
+
         </div>
     </nav>
 

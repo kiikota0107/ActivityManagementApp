@@ -5,6 +5,8 @@ using Microsoft.EntityFrameworkCore;
 using ActivityManagementApp.Components.Account;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
+using ActivityManagementApp.Services.Email;
+using Microsoft.AspNetCore.Identity.UI.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -58,12 +60,16 @@ builder.Services.AddIdentityCore<ApplicationUser>(options =>
     options.Password.RequireLowercase = false;
     options.Password.RequireUppercase = false;
     options.Password.RequireNonAlphanumeric = false;
+    options.SignIn.RequireConfirmedEmail = true;
 })
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddSignInManager()
     .AddDefaultTokenProviders();
 
-builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
+builder.Services.AddScoped<IEmailSender<ApplicationUser>, EmailSenderSendGrid>();
+
+builder.Services.AddTransient<IEmailSender, SendGridEmailSender>();
+builder.Services.AddTransient<IEmailSender<ApplicationUser>, IdentityEmailSenderAdapter>();
 
 builder.Services.AddHttpClient();
 
