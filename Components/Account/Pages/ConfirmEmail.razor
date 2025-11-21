@@ -1,4 +1,5 @@
 ﻿@page "/Account/ConfirmEmail"
+@rendermode InteractiveServer
 
 @using System.Text
 @using Microsoft.AspNetCore.Identity
@@ -20,6 +21,8 @@
 
 @code {
     private string? statusMessage;
+    private bool emailConfirmed = false;
+    private bool firstRender = true;
 
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
@@ -53,13 +56,22 @@
         if (result.Succeeded)
         {
             statusMessage = "メールアドレスの認証が完了しました。4秒後にログイン画面へ移動します。";
-
-            await Task.Delay(4000);
-            NavigationManager.NavigateTo("/Account/Login");
+            emailConfirmed = true;
         }
         else
         {
             statusMessage = "メール認証に失敗しました。リンクが無効か期限切れの可能性があります。";
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRenderCall)
+    {
+        if (firstRender && emailConfirmed)
+        {
+            firstRender = false;
+
+            await Task.Delay(4000);
+            NavigationManager.NavigateTo("/Account/Login");
         }
     }
 }

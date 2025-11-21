@@ -97,11 +97,11 @@ app.UseAuthorization();
 
 app.UseAntiforgery();
 
-app.MapRazorPages();
-app.MapControllers();
-
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
+
+app.MapRazorPages();
+app.MapControllers();
 
 if (app.Environment.IsDevelopment())
 {
