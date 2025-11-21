@@ -66,8 +66,6 @@ builder.Services.AddIdentityCore<ApplicationUser>(options =>
     .AddSignInManager()
     .AddDefaultTokenProviders();
 
-builder.Services.AddScoped<IEmailSender<ApplicationUser>, EmailSenderSendGrid>();
-
 builder.Services.AddTransient<IEmailSender, SendGridEmailSender>();
 builder.Services.AddTransient<IEmailSender<ApplicationUser>, IdentityEmailSenderAdapter>();
 
