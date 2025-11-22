@@ -1,12 +1,13 @@
 using ActivityManagementApp.Components;
-using ActivityManagementApp.Data;
-using ActivityManagementApp.Services;
-using Microsoft.EntityFrameworkCore;
 using ActivityManagementApp.Components.Account;
+using ActivityManagementApp.Data;
+using ActivityManagementApp.Domain.Validators;
+using ActivityManagementApp.Services;
+using ActivityManagementApp.Services.Email;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
-using ActivityManagementApp.Services.Email;
 using Microsoft.AspNetCore.Identity.UI.Services;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -43,6 +44,8 @@ builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<InitialCategoryRegistrationService>();
 
 builder.Services.AddScoped<TimeZoneService>();
+
+builder.Services.AddScoped<ActivityLogValidator>();
 
 builder.Services.AddAuthentication(options =>
     {

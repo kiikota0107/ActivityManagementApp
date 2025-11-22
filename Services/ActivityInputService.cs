@@ -1,6 +1,8 @@
 ﻿using ActivityManagementApp.Data;
+using ActivityManagementApp.Domain.Validators;
 using ActivityManagementApp.Models;
 using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
 
 namespace ActivityManagementApp.Services
 {
@@ -9,12 +11,14 @@ namespace ActivityManagementApp.Services
         private readonly ApplicationDbContext _context;
         private readonly UserService _userService;
         private readonly TimeZoneService _timeZoneService;
+        private readonly ActivityLogValidator _activityLogValidater;
 
-        public ActivityInputService(ApplicationDbContext context, UserService userService, TimeZoneService timeZoneService)
+        public ActivityInputService(ApplicationDbContext context, UserService userService, TimeZoneService timeZoneService, ActivityLogValidator activityLogValidator)
         {
             _context = context;
             _userService = userService;
             _timeZoneService = timeZoneService;
+            _activityLogValidater = activityLogValidator;
         }
 
         public async Task<ActivityLogs?> FindProgressActivityLogsAsync()
@@ -48,24 +52,48 @@ namespace ActivityManagementApp.Services
             await _context.SaveChangesAsync();
         }
 
-        public async Task UpdateProgressActivityLogsTempAsync(ActivityLogs activityLogsInput)
+        public async Task<CustomValidationResult> UpdateProgressActivityLogsTempAsync(ActivityLogs activityLogsInput)
         {
             ActivityLogs? progressActivity = await _context.ActivityLogs.FindAsync(activityLogsInput.Id);
 
-            if (progressActivity != null)
+            ActivityLogs? latestActivity = await _context.ActivityLogs
+                                                    .AsNoTracking()
+                                                    .FirstOrDefaultAsync(x => x.Id == activityLogsInput.Id);
+
+            if (progressActivity != null && latestActivity != null)
             {
+                var result = _activityLogValidater.Validate(latestActivity);
+                if (!result.IsValid)
+                {
+                    return result;
+                }
+
                 progressActivity.ActivityDetailTitle = activityLogsInput.ActivityDetailTitle;
                 progressActivity.ActivityDetail = activityLogsInput.ActivityDetail;
+
                 await _context.SaveChangesAsync();
+                return result;
             }
+
+            return CustomValidationResult.InValid("対象のレコードが見つかりませんでした。");
         }
 
-        public async Task UpdateProgressActivityLogsAsync(ActivityLogs activityLogsInput)
+        public async Task<CustomValidationResult> UpdateProgressActivityLogsAsync(ActivityLogs activityLogsInput)
         {
             ActivityLogs? progressActivity = await _context.ActivityLogs.FindAsync(activityLogsInput.Id);
 
-            if (progressActivity != null)
+            ActivityLogs? latestActivity = await _context.ActivityLogs
+                                                    .AsNoTracking()
+                                                    .FirstOrDefaultAsync(x => x.Id == activityLogsInput.Id);
+
+            if (progressActivity != null && latestActivity != null)
             {
+                var result = _activityLogValidater.Validate(latestActivity);
+                if (!result.IsValid)
+                {
+                    return result;
+                }
+
                 var jst = TimeZoneInfo.FindSystemTimeZoneById("Asia/Tokyo");
                 progressActivity.EndDateTime = _timeZoneService.NowJst;
 
@@ -94,8 +122,12 @@ namespace ActivityManagementApp.Services
                 progressActivity.PassingRoundMinutes = Math.Round(diff.TotalMinutes);
                 progressActivity.ActivityDetailTitle = activityLogsInput.ActivityDetailTitle;
                 progressActivity.ActivityDetail = activityLogsInput.ActivityDetail;
+
                 await _context.SaveChangesAsync();
+                return result;
             }
+
+            return CustomValidationResult.InValid("対象のレコードが見つかりませんでした。");
         }
 
         public async Task UpdateActivityDetailAsync(ActivityLogs inputActivityLogs)
@@ -109,14 +141,28 @@ namespace ActivityManagementApp.Services
             }
         }
 
-        public async Task DeleteProgressActivityLogsAsync(int id)
+        public async Task<CustomValidationResult> DeleteProgressActivityLogsAsync(int id)
         {
             ActivityLogs? progressActivity = await _context.ActivityLogs.FindAsync(id);
-            if (progressActivity != null)
+
+            ActivityLogs? latestActivity = await _context.ActivityLogs
+                                                    .AsNoTracking()
+                                                    .FirstOrDefaultAsync(x => x.Id == id);
+
+            if (progressActivity != null && latestActivity != null)
             {
+                var result = _activityLogValidater.Validate(latestActivity);
+                if (!result.IsValid)
+                {
+                    return result;
+                }
+
                 _context.ActivityLogs.Remove(progressActivity);
                 await _context.SaveChangesAsync();
+                return result;
             }
+
+            return CustomValidationResult.InValid("対象のレコードが見つかりませんでした。");
         }
     }
 }

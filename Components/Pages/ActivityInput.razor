@@ -216,24 +216,48 @@
     private async Task UpdateProgressActivityLogsTempAsync()
     {
         if (_activityLog == null) return;
-        await _activityInputService.UpdateProgressActivityLogsTempAsync(_activityLog);
-        ShowToast("一時保存しました。", "success");
+        var result = await _activityInputService.UpdateProgressActivityLogsTempAsync(_activityLog);
+
+        if (!result.IsValid)
+        {
+            ShowToast(result.ErrorMessage!, "danger");
+        }
+        else
+        {
+            ShowToast("一時保存しました。", "success");
+        }
     }
 
     private async Task UpdateProgressActivityLogsAsync()
     {
         if (_activityLog == null) return;
-        await _activityInputService.UpdateProgressActivityLogsAsync(_activityLog);
-        Initialize();
-        ShowToast("タスクを終了しました。", "info");
+        var result = await _activityInputService.UpdateProgressActivityLogsAsync(_activityLog);
+
+        if (!result.IsValid)
+        {
+            ShowToast(result.ErrorMessage!, "danger");
+        }
+        else
+        {
+            Initialize();
+            ShowToast("タスクを終了しました。", "info");
+        }
     }
 
     private async Task DeleteProgressActivityLogsAsync()
     {
         if (_activityLog == null) return;
-        await _activityInputService.DeleteProgressActivityLogsAsync(_activityLog.Id);
-        Initialize();
-        ShowToast("タスクを削除しました。", "danger");
+        var result = await _activityInputService.DeleteProgressActivityLogsAsync(_activityLog.Id);
+
+        if (!result.IsValid)
+        {
+            ShowToast(result.ErrorMessage!, "danger");
+        }
+        else
+        {
+            Initialize();
+            ShowToast("タスクを削除しました。", "danger");
+        }
     }
 
     private async void ShowToast(string message, string type)
