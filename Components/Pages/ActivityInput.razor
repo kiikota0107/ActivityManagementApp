@@ -54,7 +54,7 @@
                 <span class="@ColorClassBuilder.BuildBackgroundBadgeClass(
                                                     GetColorKey(_activityLog.CategoryMaster?.CategoryTypeMasterId),
                                                     GetTextColorKey(_activityLog.CategoryMaster?.CategoryTypeMasterId)
-                 )">（開始：@activityStartTimeDisp）</span>
+                 )">（開始：@_activityLog.StartDateTime.ToShortTimeString()）</span>
             </div>
         </div>
             <div class="card-body">
@@ -120,7 +120,6 @@
     private List<CategoryMaster>? _categoryMasters;
     private List<CategoryTypeMaster> _categoryTypeMasters = new();
     private ActivityLogs? _activityLog = new();
-    private string? activityStartTimeDisp = null;
     private ActivityInputViewModel inputModel = new();
     private Dictionary<string, string> validationErrors = new();
 
@@ -141,7 +140,6 @@
         if (findResult != null)
         {
             _activityLog = findResult;
-            activityStartTimeDisp = findResult.StartDateTime.ToShortTimeString();
 
             inputModel.ActivityDetailTitle = _activityLog.ActivityDetailTitle ?? "";
             inputModel.ActivityDetail = _activityLog.ActivityDetail ?? "";
@@ -190,37 +188,37 @@
     {
         _activityLog = null;
         inputModel = new ActivityInputViewModel();
-        activityStartTimeDisp = null;
     }
 
     private async Task StartActivity(int categoryMasterId)
     {
-        if (_activityLog != null && _activityLog.EndDateTime <= _activityLog.StartDateTime)
-        {
-            ShowToast("進行中のタスクがあるため、新規タスクを作成できません。", "danger");
-            return;
-        }
-
         if (categoryMasterId <= 0) return;
 
-        _activityLog = new ActivityLogs();
-        var jst = TimeZoneInfo.FindSystemTimeZoneById("Asia/Tokyo");
-        _activityLog.StartDateTime = _timeZoneService.NowJst;
-        _activityLog.CategoryMasterId = categoryMasterId;
-        activityStartTimeDisp = _activityLog.StartDateTime.ToShortTimeString();
+        var result = await _activityInputService.InsertActivityLogsAsync(categoryMasterId);
 
-        await _activityInputService.InsertActivityLogsAsync(_activityLog);
-        ShowToast("タスクを開始しました。", "info");
+        if (!result.IsValid)
+        {
+            ShowToast(result.ErrorMessage, "danger");
+        }
+        else
+        {
+            ShowToast("タスクを開始しました。", "info");
+        }
+
+        await SetProgressActivity();
     }
 
     private async Task UpdateProgressActivityLogsTempAsync()
     {
         if (_activityLog == null) return;
+
         var result = await _activityInputService.UpdateProgressActivityLogsTempAsync(_activityLog);
 
         if (!result.IsValid)
         {
-            ShowToast(result.ErrorMessage!, "danger");
+            ShowToast(result.ErrorMessage, "danger");
+
+            await SetProgressActivity();
         }
         else
         {
@@ -235,7 +233,9 @@
 
         if (!result.IsValid)
         {
-            ShowToast(result.ErrorMessage!, "danger");
+            ShowToast(result.ErrorMessage, "danger");
+
+            await SetProgressActivity();
         }
         else
         {
@@ -251,7 +251,9 @@
 
         if (!result.IsValid)
         {
-            ShowToast(result.ErrorMessage!, "danger");
+            ShowToast(result.ErrorMessage, "danger");
+
+            await SetProgressActivity();
         }
         else
         {
@@ -260,8 +262,10 @@
         }
     }
 
-    private async void ShowToast(string message, string type)
+    private async void ShowToast(string? message, string type)
     {
+        if (message == null) return;
+
         toastMessage = $"[{_timeZoneService.NowJst:HH:mm}] {message}";
         toastType = type;
 
@@ -277,6 +281,14 @@
     private void HideToast()
     {
         toastMessage = null;
+    }
+
+    private async Task SetProgressActivity()
+    {
+        _activityLog = await _activityInputService.FindProgressActivityLogsAsync();
+
+        inputModel.ActivityDetailTitle = _activityLog?.ActivityDetailTitle ?? "";
+        inputModel.ActivityDetail = _activityLog?.ActivityDetail ?? "";
     }
 
     private string GetCategoryTypeName(int typeId)

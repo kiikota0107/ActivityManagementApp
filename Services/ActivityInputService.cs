@@ -38,7 +38,7 @@ namespace ActivityManagementApp.Services
             return progressActivity;
         }
 
-        public async Task InsertActivityLogsAsync(ActivityLogs newActivityLogs)
+        public async Task<CustomValidationResult> InsertActivityLogsAsync(int categoryMasterId)
         {
             var userId = await _userService.GetUserIdAsync();
 
@@ -47,9 +47,27 @@ namespace ActivityManagementApp.Services
                 throw new Exception("ユーザーがログインしていません。");
             }
 
+            ActivityLogs? latestProgressActivity = await _context.ActivityLogs
+                                                    .AsNoTracking()
+                                                    .FirstOrDefaultAsync(x => x.EndDateTime == DateTime.MinValue
+                                                                           && x.UserId == userId);
+
+            if (latestProgressActivity != null)
+            {
+                var result = CustomValidationResult.InValid("進行中のタスクがあるため、新規タスクを作成できません。");
+                return result;
+            }
+
+            var newActivityLogs = new ActivityLogs();
+            var jst = TimeZoneInfo.FindSystemTimeZoneById("Asia/Tokyo");
+            newActivityLogs.StartDateTime = _timeZoneService.NowJst;
+            newActivityLogs.CategoryMasterId = categoryMasterId;
             newActivityLogs.UserId = userId;
+
             _context.ActivityLogs.Add(newActivityLogs);
             await _context.SaveChangesAsync();
+
+            return CustomValidationResult.Valid();
         }
 
         public async Task<CustomValidationResult> UpdateProgressActivityLogsTempAsync(ActivityLogs activityLogsInput)
@@ -72,6 +90,7 @@ namespace ActivityManagementApp.Services
                 progressActivity.ActivityDetail = activityLogsInput.ActivityDetail;
 
                 await _context.SaveChangesAsync();
+
                 return result;
             }
 
@@ -124,6 +143,7 @@ namespace ActivityManagementApp.Services
                 progressActivity.ActivityDetail = activityLogsInput.ActivityDetail;
 
                 await _context.SaveChangesAsync();
+
                 return result;
             }
 
@@ -159,6 +179,7 @@ namespace ActivityManagementApp.Services
 
                 _context.ActivityLogs.Remove(progressActivity);
                 await _context.SaveChangesAsync();
+
                 return result;
             }
 
