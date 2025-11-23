@@ -131,7 +131,7 @@
                 await EmailSender.SendConfirmationLinkAsync(user, Input.Email, callbackUrl);
 
                 errorMessage =
-                    "メールアドレスが確認されていません。<br>" +
+                    "メールアドレスが確認されていません。\n" +
                     "新しい確認メールを送信しましたので、メールに記載されたリンクをクリックしてください。";
             }
             else
