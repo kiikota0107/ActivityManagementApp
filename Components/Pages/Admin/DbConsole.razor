@@ -5,17 +5,10 @@
 @using Microsoft.AspNetCore.Authorization
 @inject IConfiguration Config
 @inject NavigationManager Nav
-@inject AuthenticationStateProvider AuthStateProvider
 
-@attribute [Authorize]
+@attribute [Authorize(Roles = "Admin")]
 
 <h3>DB 管理コンソール（管理者専用）</h3>
-
-@if (!isAdmin)
-{
-    <p class="text-danger">アクセス権限がありません。</p>
-    return;
-}
 
 <div class="mb-3">
     <textarea class="form-control" rows="4" @bind="sqlInput"></textarea>
@@ -59,17 +52,6 @@
     private string? message;
     private List<Dictionary<string, object>>? resultTable;
     private List<string>? resultColumns;
-
-    private bool isAdmin = false;
-    private readonly string adminEmail = "kiikota0107@gmail.com";
-
-    protected override async Task OnInitializedAsync()
-    {
-        var auth = await AuthStateProvider.GetAuthenticationStateAsync();
-        var user = auth.User;
-
-        isAdmin = user.Identity!.IsAuthenticated && user.Identity.Name == adminEmail;
-    }
 
     private bool IsSqlSafe(string sql)
     {
