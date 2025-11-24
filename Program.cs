@@ -65,6 +65,7 @@ builder.Services.AddIdentityCore<ApplicationUser>(options =>
     options.Password.RequireNonAlphanumeric = false;
     options.SignIn.RequireConfirmedEmail = true;
 })
+    .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddSignInManager()
     .AddDefaultTokenProviders();
@@ -92,7 +93,7 @@ using (var scope = app.Services.CreateScope())
 
     var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
 
-    var adminEmail = builder.Configuration.GetConnectionString("AdminUser") ?? throw new InvalidOperationException("'AdminUser' not found.");
+    var adminEmail = builder.Configuration["AdminUser:Email"] ?? throw new InvalidOperationException("'AdminUser' not found.");
     var adminUser = await userManager.FindByEmailAsync(adminEmail ?? "");
 
     if (adminUser != null && !await userManager.IsInRoleAsync(adminUser, "admin"))
