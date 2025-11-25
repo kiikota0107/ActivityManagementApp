@@ -15,6 +15,7 @@
 @inject UserManager<ApplicationUser> UserManager
 @inject ILogger<Login> Logger
 @inject IEmailSender<ApplicationUser> EmailSender
+@inject IConfiguration Config
 
 @attribute [AllowAnonymous]
 
@@ -58,14 +59,17 @@
 
         <!-- ログインボタン -->
         <div class="d-grid mb-3">
-            <button type="submit" class="btn btn-primary">ログイン</button>
+            <button id="loginButton" type="submit" class="btn btn-primary">ログイン</button>
         </div>
 
         <!-- その他リンク -->
         <div class="mt-3">
             <p><a href="/Account/ForgotPassword">パスワードをお忘れですか？</a></p>
             <p><a href="/Account/Register">新規ユーザー登録はこちら</a></p>
-            <p><a href="/Account/GuestLogin">採用担当者の方はこちら</a></p>
+            <a href="javascript:void(0);"
+               onclick="guestLogin('@Config["GuestUser:Email"]', '@Config["GuestUser:Password"]')">
+                採用担当者の方はこちら（ゲストログイン）
+            </a>
         </div>
     </EditForm>
 </div>
@@ -79,7 +83,7 @@
     [SupplyParameterFromForm]
     private AuthInputModels.LoginInputModel Input { get; set; } = new();
 
-    private string? ReturnUrl { get; set; } = "/activityinput";
+    private string? ReturnUrl { get; set; } = "/";
 
     protected override async Task OnInitializedAsync()
     {
