@@ -20,44 +20,46 @@
         <div class="alert alert-danger">
             データが見つかりませんでした。
         </div>
-        return;
     }
+    else
+    {
 
-    <!-- カテゴリ情報 -->
-    <div class="badge
-                @ColorClassBuilder.BuildBackgroundBadgeClass(
-                                    GetColorKey(activity.CategoryMaster?.CategoryTypeMasterId),
-                                    GetTextColorKey(activity.CategoryMaster?.CategoryTypeMasterId)
-              )">
-        @(activity.CategoryMaster?.CategoryName ?? "(削除済みカテゴリ)")
-    </div>
-
-    <div class="text-muted mb-3">
-        @activity.StartDateTime.ToString("HH:mm") ～ @activity.EndDateTime.ToString("HH:mm")
-        （@activity.PassingRoundMinutes 分）
-    </div>
-
-    <EditForm Model="inputModel" OnValidSubmit="UpdateDetail" FormName="detail-edit">
-        <DataAnnotationsValidator />
-        <ValidationSummary class="text-danger" />
-
-        <div class="mb-3">
-            <label class="form-label">タスクタイトル</label>
-            <InputText class="form-control" @bind-Value="inputModel.ActivityDetailTitle" />
-            <ValidationMessage For="() => inputModel.ActivityDetailTitle" class="text-danger" />
+        <!-- カテゴリ情報 -->
+        <div class="badge
+                    @ColorClassBuilder.BuildBackgroundBadgeClass(
+             GetColorKey(activity.CategoryMaster?.CategoryTypeMasterId),
+                                             GetTextColorKey(activity.CategoryMaster?.CategoryTypeMasterId)
+                       )">
+            @(activity.CategoryMaster?.CategoryName ?? "(削除済みカテゴリ)")
         </div>
 
-        <div class="mb-3">
-            <label class="form-label">詳細メモ</label>
-            <InputTextArea class="form-control" rows="10" @bind-Value="inputModel.ActivityDetail" />
-            <ValidationMessage For="() => inputModel.ActivityDetail" class="text-danger" />
+        <div class="text-muted mb-3">
+            @activity.StartDateTime.ToString("HH:mm") ～ @activity.EndDateTime.ToString("HH:mm")
+            （@activity.PassingRoundMinutes 分）
         </div>
 
-        <div class="d-flex gap-2">
-            <button class="btn btn-primary" type="submit">変更を保存</button>
-            <button class="btn btn-secondary" @onclick="BackToList">戻る</button>
-        </div>
-    </EditForm>
+        <EditForm Model="inputModel" OnValidSubmit="UpdateDetail" FormName="detail-edit">
+            <DataAnnotationsValidator />
+            <ValidationSummary class="text-danger" />
+
+            <div class="mb-3">
+                <label class="form-label">タスクタイトル</label>
+                <InputText class="form-control" @bind-Value="inputModel.ActivityDetailTitle" />
+                <ValidationMessage For="() => inputModel.ActivityDetailTitle" class="text-danger" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">詳細メモ</label>
+                <InputTextArea class="form-control" rows="10" @bind-Value="inputModel.ActivityDetail" />
+                <ValidationMessage For="() => inputModel.ActivityDetail" class="text-danger" />
+            </div>
+
+            <div class="d-flex gap-2">
+                <button class="btn btn-primary" type="submit">変更を保存</button>
+                <button class="btn btn-secondary" @onclick="BackToList">戻る</button>
+            </div>
+        </EditForm>
+    }
 </div>
 
 @code {

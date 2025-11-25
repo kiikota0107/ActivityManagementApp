@@ -20,14 +20,28 @@ namespace ActivityManagementApp.Services
 
         public async Task<ActivityLogs?> FindActivityLogsByIdAsync(int Id)
         {
-            var userId = await _userService.GetUserIdAsync();
-            if (userId == null) return null;
+            var currentUserId = await _userService.GetUserIdAsync();
+            if (currentUserId == null) return null;
 
             ActivityLogs? activityLogs = await _context.ActivityLogs
                                         .Include(x => x.CategoryMaster)
                                             .ThenInclude(cm => cm!.CategoryTypeMaster)
-                                        .Where(x => x.UserId == userId)
+                                        .Where(x => x.UserId == currentUserId)
                                         .FirstOrDefaultAsync(x => x.Id == Id);
+
+            var guestUserId = await _userService.GetUserIdByEmailAsync(_config["GuestUser:Email"]);
+
+            if (currentUserId == guestUserId)
+            {
+                var demoUserId = await _userService.GetUserIdByEmailAsync(_config["DemoOwner:Email"]);
+
+                activityLogs = await _context.ActivityLogs
+                                            .Include(x => x.CategoryMaster)
+                                                .ThenInclude(cm => cm!.CategoryTypeMaster)
+                                            .Where(x => x.UserId == demoUserId)
+                                            .FirstOrDefaultAsync(x => x.Id == Id);
+            }
+
             return activityLogs;
         }
 
