@@ -25,31 +25,35 @@
   </tr>
   <tr>
     <td align="center">
-      <img src="./doc/入力画面_タスク作成_詳細入力_タスク終了.gif" width="500" alt="入力画面">
+      <img src="./doc/入力画面_タスク作成_詳細入力_タスク終了.gif" width="350" alt="入力画面">
     </td>
     <td align="center">
-      <img src="./doc/一覧画面_対象日付切り替え.gif" width="500" alt="一覧画面">
+      <img src="./doc/一覧画面_対象日付切り替え.gif" width="350" alt="一覧画面">
     </td>
   </tr>
+</table>
+<table>
   <tr>
     <th>詳細画面</th>
     <th>カテゴリ管理画面(カテゴリタイプ)</th>
   </tr>
   <tr>
     <td align="center">
-      <img src="./doc/詳細画面_内容の更新.gif" width="500" alt="詳細画面">
+      <img src="./doc/詳細画面_内容の更新.gif" width="350" alt="詳細画面">
     </td>
     <td align="center">
-      <img src="./doc/カテゴリ管理画面_新規作成_編集_削除.gif" width="500" alt="カテゴリ管理画面(カテゴリタイプ)">
+      <img src="./doc/カテゴリ管理画面_新規作成_編集_削除.gif" width="350" alt="カテゴリ管理画面(カテゴリタイプ)">
     </td>
   </tr>
+</table>
+<table>
   <tr>
     <th>カテゴリ管理画面(カテゴリ)</th>
     <th></th>
   </tr>
   <tr>
     <td align="center">
-      <img src="./doc/カテゴリ管理画面_カテゴリ_新規作成_並べ替え.gif" width="500" alt="カテゴリ管理画面(カテゴリ)">
+      <img src="./doc/カテゴリ管理画面_カテゴリ_新規作成_並べ替え.gif" width="350" alt="カテゴリ管理画面(カテゴリ)">
     </td>
     <td>
     </td>
