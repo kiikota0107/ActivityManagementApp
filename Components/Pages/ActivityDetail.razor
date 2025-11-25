@@ -3,6 +3,7 @@
 @using ActivityManagementApp.Models
 @using ActivityManagementApp.ViewModels
 @using ActivityManagementApp.Services
+@using ActivityManagementApp.Components.Account.Shared
 @using Microsoft.AspNetCore.Authorization
 @inject ActivityInputService _activityInputService
 @inject FindActivityLogsService _findActivityLogsService
@@ -14,6 +15,8 @@
 
 <div class="container mt-4">
     <h1 class="mb-3">詳細画面</h1>
+
+    <StatusMessage Message="@ErrorMessage" />
 
     @if (activity == null)
     {
@@ -65,6 +68,8 @@
 @code {
     [Parameter] public int id { get; set; }
 
+    private string? ErrorMessage;
+
     private ActivityLogs? activity;
     private ActivityInputViewModel inputModel = new();
     private List<CategoryTypeMaster> _categoryTypeMasters = new();
@@ -89,9 +94,16 @@
         activity.ActivityDetailTitle = inputModel.ActivityDetailTitle;
         activity.ActivityDetail = inputModel.ActivityDetail;
 
-        await _activityInputService.UpdateActivityDetailAsync(activity);
+        var result = await _activityInputService.UpdateActivityDetailAsync(activity);
 
-        NavigationManager.NavigateTo("/activitylogslist");
+        if (!result.IsValid)
+        {
+            ErrorMessage = result.ErrorMessage;
+        }
+        else
+        {
+            BackToList();
+        }
     }
 
     private void BackToList()

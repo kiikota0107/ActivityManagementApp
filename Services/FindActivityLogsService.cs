@@ -31,7 +31,7 @@ namespace ActivityManagementApp.Services
 
             var guestUserId = await _userService.GetUserIdByEmailAsync(_config["GuestUser:Email"]);
 
-            if (currentUserId == guestUserId)
+            if (activityLogs == null && currentUserId == guestUserId)
             {
                 var demoUserId = await _userService.GetUserIdByEmailAsync(_config["DemoOwner:Email"]);
 
