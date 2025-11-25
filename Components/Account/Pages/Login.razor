@@ -10,10 +10,10 @@
 @using Microsoft.AspNetCore.Authorization
 
 @inject SignInManager<ApplicationUser> SignInManager
-@inject ILogger<Login> Logger
 @inject NavigationManager NavigationManager
 @inject IdentityRedirectManager RedirectManager
 @inject UserManager<ApplicationUser> UserManager
+@inject ILogger<Login> Logger
 @inject IEmailSender<ApplicationUser> EmailSender
 
 @attribute [AllowAnonymous]
@@ -65,6 +65,7 @@
         <div class="mt-3">
             <p><a href="/Account/ForgotPassword">パスワードをお忘れですか？</a></p>
             <p><a href="/Account/Register">新規ユーザー登録はこちら</a></p>
+            <p><a href="/Account/GuestLogin">採用担当者の方はこちら</a></p>
         </div>
     </EditForm>
 </div>
@@ -78,7 +79,6 @@
     [SupplyParameterFromForm]
     private AuthInputModels.LoginInputModel Input { get; set; } = new();
 
-    [SupplyParameterFromQuery]
     private string? ReturnUrl { get; set; } = "/activityinput";
 
     protected override async Task OnInitializedAsync()

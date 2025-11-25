@@ -150,15 +150,23 @@ namespace ActivityManagementApp.Services
             return CustomValidationResult.InValid("対象のレコードが見つかりませんでした。");
         }
 
-        public async Task UpdateActivityDetailAsync(ActivityLogs inputActivityLogs)
+        public async Task<CustomValidationResult> UpdateActivityDetailAsync(ActivityLogs inputActivityLogs)
         {
             ActivityLogs? targetActivity = await _context.ActivityLogs.FindAsync(inputActivityLogs.Id);
+
             if(targetActivity != null)
             {
+                var userId = await _userService.GetUserIdAsync();
+
+                if (userId != targetActivity.UserId) return CustomValidationResult.InValid("デモデータのため、更新できません");
+
                 targetActivity.ActivityDetailTitle = inputActivityLogs.ActivityDetailTitle;
                 targetActivity.ActivityDetail = inputActivityLogs.ActivityDetail;
                 await _context.SaveChangesAsync();
+                return CustomValidationResult.Valid();
             }
+
+            return CustomValidationResult.InValid("更新対象のレコードが見つかりませんでした。");
         }
 
         public async Task<CustomValidationResult> DeleteProgressActivityLogsAsync(int id)

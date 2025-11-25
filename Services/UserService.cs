@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Components.Authorization;
+﻿using ActivityManagementApp.Data;
+using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Identity;
 using System.Security.Claims;
 
 namespace ActivityManagementApp.Services
@@ -7,9 +9,12 @@ namespace ActivityManagementApp.Services
     {
         private readonly AuthenticationStateProvider _authenticationStateProvider;
 
-        public UserService(AuthenticationStateProvider authenticationStateProvider)
+        private readonly UserManager<ApplicationUser> _userManager;
+
+        public UserService(AuthenticationStateProvider authenticationStateProvider, UserManager<ApplicationUser> userManager)
         {
             _authenticationStateProvider = authenticationStateProvider;
+            _userManager = userManager;
         }
 
         /// <summary>
@@ -35,6 +40,17 @@ namespace ActivityManagementApp.Services
         {
             var authState = await _authenticationStateProvider.GetAuthenticationStateAsync();
             return authState.User.Identity?.IsAuthenticated ?? false;
+        }
+
+        /// <summary>
+        /// メールアドレスからユーザIDを取得
+        /// </summary>
+        public async Task<string?> GetUserIdByEmailAsync(string? email)
+        {
+            if (string.IsNullOrEmpty(email)) return null;
+
+            var user = await _userManager.FindByEmailAsync(email);
+            return user?.Id;
         }
     }
 }
