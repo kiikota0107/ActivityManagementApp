@@ -92,10 +92,10 @@ namespace ActivityManagementApp.Services
         {
             if (input == null) return CustomValidationResult.InValid("更新対象のレコードがありません。");
 
-            var result = CommonValidator.ValidateMixUser(input);
-            if (!result.IsValid) return result;
-
             var userId = await _userService.GetUserIdAsync();
+
+            var result = CommonValidator.ValidateMixUser(input, userId ?? "");
+            if (!result.IsValid) return result;
 
             var list = await _context.CategoryTypeMaster
                                         .Where(x => x.UserId == userId)
@@ -197,9 +197,10 @@ namespace ActivityManagementApp.Services
         public async Task<CustomValidationResult> UpdateCategorySortOrdersAsync(List<CategoryMaster> input)
         {
             if (input == null) return CustomValidationResult.InValid("更新対象のレコードがありません。");
+
             var userId = await _userService.GetUserIdAsync();
 
-            var result = CommonValidator.ValidateMixUser(input);
+            var result = CommonValidator.ValidateMixUser(input, userId ?? "");
             if (!result.IsValid) return result;
 
             var list = await _context.CategoryMaster
