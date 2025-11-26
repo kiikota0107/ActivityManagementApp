@@ -2,7 +2,7 @@
 
 namespace ActivityManagementApp.Models
 {
-    public class CategoryTypeMaster
+    public class CategoryTypeMaster : IHasUserId
     {
         [Key]
         public int Id { get; set; }
