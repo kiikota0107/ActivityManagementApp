@@ -139,7 +139,8 @@ else
         }
         else
         {
-            await _categorySettingsService.UpdateCategoryTypeAsync(entity);
+            var result = await _categorySettingsService.UpdateCategoryTypeAsync(entity);
+            if (!result.IsValid) errorMessage = result.ErrorMessage;
         }
 
         await LoadCategoryTypesAsync();
@@ -162,14 +163,10 @@ else
 
         if (!confirm) return;
 
-        bool success = await _categorySettingsService.DeleteCategoryTypeAsync(target.Id);
+        var result = await _categorySettingsService.DeleteCategoryTypeAsync(target.Id);
 
-        if (!success)
-        {
-            errorMessage = $"カテゴリタイプ「{target.TypeName}」は使用されているため削除できません。";
-        }
+        if (!result.IsValid) errorMessage = result.ErrorMessage;
 
-        await _categorySettingsService.DeleteCategoryTypeAsync(target.Id);
         await LoadCategoryTypesAsync();
     }
 
@@ -193,8 +190,9 @@ else
 
     private async Task SaveSortOrder()
     {
-        var orderedIds = categoryTypes.Select(x => x.Id).ToList();
-        await _categorySettingsService.UpdateCategoryTypeSortOrdersAsync(orderedIds);
+        var result = await _categorySettingsService.UpdateCategoryTypeSortOrdersAsync(categoryTypes);
+
+        if (!result.IsValid) errorMessage = result.ErrorMessage;
         await LoadCategoryTypesAsync();
     }
 

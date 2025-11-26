@@ -8,6 +8,14 @@
 
 <h4 class="mb-3">カテゴリ管理</h4>
 
+<!-- ▼ エラーメッセージ表示 -->
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-danger">
+        @errorMessage
+    </div>
+}
+
 @if (isEditing)
 {
     <CategoryForm Model="editingModel"
@@ -80,6 +88,8 @@ else
     private int? draggingId = null;
 
     private CategoryEditViewModel editingModel = new();
+
+    private string? errorMessage;
 
     protected override async Task OnInitializedAsync()
     {
@@ -158,7 +168,8 @@ else
         }
         else
         {
-            await _categorySettingsService.UpdateCategoryAsync(entity);
+            var result = await _categorySettingsService.UpdateCategoryAsync(entity);
+            if (!result.IsValid) errorMessage = result.ErrorMessage;
         }
 
         await LoadAsync();
@@ -178,7 +189,9 @@ else
 
         if (!confirm) return;
 
-        await _categorySettingsService.DeleteCategoryAsync(target.Id);
+        var result = await _categorySettingsService.DeleteCategoryAsync(target.Id);
+        if (!result.IsValid) errorMessage = result.ErrorMessage;
+
         await LoadAsync();
     }
 
@@ -202,8 +215,8 @@ else
 
     private async Task SaveSortOrder()
     {
-        var orderdIds = categories.Select(x => x.Id).ToList();
-        await _categorySettingsService.UpdateCategorySortOrdersAsync(orderdIds);
+        var result = await _categorySettingsService.UpdateCategorySortOrdersAsync(categories);
+        if (!result.IsValid) errorMessage = result.ErrorMessage;
         await LoadAsync();
     }
 
