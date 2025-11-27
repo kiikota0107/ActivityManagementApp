@@ -190,6 +190,8 @@ else
 
     private async Task SaveSortOrder()
     {
+        errorMessage = null;
+
         var result = await _categorySettingsService.UpdateCategoryTypeSortOrdersAsync(categoryTypes);
 
         if (!result.IsValid) errorMessage = result.ErrorMessage;

@@ -133,12 +133,15 @@ else
 
     private void StartCreate()
     {
+        errorMessage = null;
         editingModel = new CategoryEditViewModel();
         isEditing = true;
     }
 
     private void StartEdit(CategoryMaster cat)
     {
+        errorMessage = null;
+
         // ★ Entity → ViewModel（深いコピー）
         editingModel = new CategoryEditViewModel
         {
@@ -178,12 +181,14 @@ else
 
     private Task HandleCancel()
     {
+        errorMessage = null;
         isEditing = false;
         return Task.CompletedTask;
     }
 
     private async Task Delete(CategoryMaster target)
     {
+        errorMessage = null;
         bool confirm = await JS.InvokeAsync<bool>("confirm",
             $"{target.CategoryName} を削除しますか？（過去ログのカテゴリは削除済み扱いになります）");
 
@@ -215,6 +220,8 @@ else
 
     private async Task SaveSortOrder()
     {
+        errorMessage = null;
+
         var result = await _categorySettingsService.UpdateCategorySortOrdersAsync(categories);
         if (!result.IsValid) errorMessage = result.ErrorMessage;
         await LoadAsync();
