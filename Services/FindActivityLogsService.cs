@@ -1,29 +1,30 @@
 ﻿using ActivityManagementApp.Data;
 using ActivityManagementApp.Models;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace ActivityManagementApp.Services
 {
     public class FindActivityLogsService
     {
-        private readonly ApplicationDbContext _context;
+        IDbContextFactory<ApplicationDbContext> _contextFactory;
         private readonly UserService _userService;
         private readonly IConfiguration _config;
 
-        public FindActivityLogsService(ApplicationDbContext context, UserService userService, IConfiguration config)
+        public FindActivityLogsService(IDbContextFactory<ApplicationDbContext> contextFactory, UserService userService, IConfiguration config)
         {
-            _context = context;
+            _contextFactory = contextFactory;
             _userService = userService;
             _config = config;
         }
 
         public async Task<ActivityLogs?> FindActivityLogsByIdAsync(int Id)
         {
+            using var context = await _contextFactory.CreateDbContextAsync();
+
             var currentUserId = await _userService.GetUserIdAsync();
             if (currentUserId == null) return null;
 
-            ActivityLogs? activityLogs = await _context.ActivityLogs
+            ActivityLogs? activityLogs = await context.ActivityLogs
                                         .Include(x => x.CategoryMaster)
                                             .ThenInclude(cm => cm!.CategoryTypeMaster)
                                         .Where(x => x.UserId == currentUserId)
@@ -35,7 +36,7 @@ namespace ActivityManagementApp.Services
             {
                 var demoUserId = await _userService.GetUserIdByEmailAsync(_config["DemoOwner:Email"]);
 
-                activityLogs = await _context.ActivityLogs
+                activityLogs = await context.ActivityLogs
                                             .Include(x => x.CategoryMaster)
                                                 .ThenInclude(cm => cm!.CategoryTypeMaster)
                                             .Where(x => x.UserId == demoUserId)
@@ -47,13 +48,15 @@ namespace ActivityManagementApp.Services
 
         public async Task<List<ActivityLogs>> FindActivityLogsByDatgetDateAsync(DateTime targetDate)
         {
+            using var context = await _contextFactory.CreateDbContextAsync();
+
             var currentUserId = await _userService.GetUserIdAsync();
             if (currentUserId == null)
             {
                 return new List<ActivityLogs>();
             }
 
-            List<ActivityLogs> activityLogs = await _context.ActivityLogs
+            List<ActivityLogs> activityLogs = await context.ActivityLogs
                                                 .Include(x => x.CategoryMaster)
                                                     .ThenInclude(cm => cm!.CategoryTypeMaster)
                                                 .Where(x => x.UserId == currentUserId
@@ -68,7 +71,7 @@ namespace ActivityManagementApp.Services
             {
                 var demoUserId = await _userService.GetUserIdByEmailAsync(_config["DemoOwner:Email"]);
 
-                List<ActivityLogs> demoLogs = await _context.ActivityLogs
+                List<ActivityLogs> demoLogs = await context.ActivityLogs
                                                 .Include(x => x.CategoryMaster)
                                                     .ThenInclude(cm => cm!.CategoryTypeMaster)
                                                 .Where(x => x.UserId == demoUserId

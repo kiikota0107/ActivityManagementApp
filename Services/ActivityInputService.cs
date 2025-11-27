@@ -2,20 +2,19 @@
 using ActivityManagementApp.Domain.Validators;
 using ActivityManagementApp.Models;
 using Microsoft.EntityFrameworkCore;
-using System.ComponentModel.DataAnnotations;
 
 namespace ActivityManagementApp.Services
 {
     public class ActivityInputService
     {
-        private readonly ApplicationDbContext _context;
+        IDbContextFactory<ApplicationDbContext> _contextFactory;
         private readonly UserService _userService;
         private readonly TimeZoneService _timeZoneService;
         private readonly ActivityLogValidator _activityLogValidater;
 
-        public ActivityInputService(ApplicationDbContext context, UserService userService, TimeZoneService timeZoneService, ActivityLogValidator activityLogValidator)
+        public ActivityInputService(IDbContextFactory<ApplicationDbContext> contextFactory, UserService userService, TimeZoneService timeZoneService, ActivityLogValidator activityLogValidator)
         {
-            _context = context;
+            _contextFactory = contextFactory;
             _userService = userService;
             _timeZoneService = timeZoneService;
             _activityLogValidater = activityLogValidator;
@@ -30,7 +29,9 @@ namespace ActivityManagementApp.Services
                 throw new Exception("ユーザーがログインしていません。");
             }
 
-            ActivityLogs? progressActivity = await _context.ActivityLogs
+            using var context = await _contextFactory.CreateDbContextAsync();
+
+            ActivityLogs? progressActivity = await context.ActivityLogs
                                                 .Include(x => x.CategoryMaster)
                                                 .ThenInclude(x => x!.CategoryTypeMaster)
                                                 .Where(x => x.UserId == userId && x.EndDateTime < x.StartDateTime)
@@ -46,8 +47,10 @@ namespace ActivityManagementApp.Services
             {
                 throw new Exception("ユーザーがログインしていません。");
             }
+            
+            using var context = await _contextFactory.CreateDbContextAsync();
 
-            ActivityLogs? latestProgressActivity = await _context.ActivityLogs
+            ActivityLogs? latestProgressActivity = await context.ActivityLogs
                                                     .AsNoTracking()
                                                     .FirstOrDefaultAsync(x => x.EndDateTime == DateTime.MinValue
                                                                            && x.UserId == userId);
@@ -64,17 +67,19 @@ namespace ActivityManagementApp.Services
             newActivityLogs.CategoryMasterId = categoryMasterId;
             newActivityLogs.UserId = userId;
 
-            _context.ActivityLogs.Add(newActivityLogs);
-            await _context.SaveChangesAsync();
+            context.ActivityLogs.Add(newActivityLogs);
+            await context.SaveChangesAsync();
 
             return CustomValidationResult.Valid();
         }
 
         public async Task<CustomValidationResult> UpdateProgressActivityLogsTempAsync(ActivityLogs activityLogsInput)
         {
-            ActivityLogs? progressActivity = await _context.ActivityLogs.FindAsync(activityLogsInput.Id);
+            using var context = await _contextFactory.CreateDbContextAsync();
 
-            ActivityLogs? latestActivity = await _context.ActivityLogs
+            ActivityLogs? progressActivity = await context.ActivityLogs.FindAsync(activityLogsInput.Id);
+
+            ActivityLogs? latestActivity = await context.ActivityLogs
                                                     .AsNoTracking()
                                                     .FirstOrDefaultAsync(x => x.Id == activityLogsInput.Id);
 
@@ -89,7 +94,7 @@ namespace ActivityManagementApp.Services
                 progressActivity.ActivityDetailTitle = activityLogsInput.ActivityDetailTitle;
                 progressActivity.ActivityDetail = activityLogsInput.ActivityDetail;
 
-                await _context.SaveChangesAsync();
+                await context.SaveChangesAsync();
 
                 return result;
             }
@@ -99,9 +104,11 @@ namespace ActivityManagementApp.Services
 
         public async Task<CustomValidationResult> UpdateProgressActivityLogsAsync(ActivityLogs activityLogsInput)
         {
-            ActivityLogs? progressActivity = await _context.ActivityLogs.FindAsync(activityLogsInput.Id);
+            using var context = await _contextFactory.CreateDbContextAsync();
 
-            ActivityLogs? latestActivity = await _context.ActivityLogs
+            ActivityLogs? progressActivity = await context.ActivityLogs.FindAsync(activityLogsInput.Id);
+
+            ActivityLogs? latestActivity = await context.ActivityLogs
                                                     .AsNoTracking()
                                                     .FirstOrDefaultAsync(x => x.Id == activityLogsInput.Id);
 
@@ -132,7 +139,7 @@ namespace ActivityManagementApp.Services
                     string customFormatEndTimeForNewDays = newDaysActivity.EndDateTime.ToShortTimeString();
                     TimeSpan diffForNewDays = DateTime.Parse(customFormatEndTimeForNewDays) - DateTime.Parse(customFormatStartTimeForNewDays);
                     newDaysActivity.PassingRoundMinutes = Math.Round(diffForNewDays.TotalMinutes);
-                    _context.ActivityLogs.Add(newDaysActivity);
+                    context.ActivityLogs.Add(newDaysActivity);
                 }
 
                 string customFormatStartTime = progressActivity.StartDateTime.ToShortTimeString();
@@ -142,7 +149,7 @@ namespace ActivityManagementApp.Services
                 progressActivity.ActivityDetailTitle = activityLogsInput.ActivityDetailTitle;
                 progressActivity.ActivityDetail = activityLogsInput.ActivityDetail;
 
-                await _context.SaveChangesAsync();
+                await context.SaveChangesAsync();
 
                 return result;
             }
@@ -152,7 +159,9 @@ namespace ActivityManagementApp.Services
 
         public async Task<CustomValidationResult> UpdateActivityDetailAsync(ActivityLogs inputActivityLogs)
         {
-            ActivityLogs? targetActivity = await _context.ActivityLogs.FindAsync(inputActivityLogs.Id);
+            using var context = await _contextFactory.CreateDbContextAsync();
+
+            ActivityLogs? targetActivity = await context.ActivityLogs.FindAsync(inputActivityLogs.Id);
 
             if(targetActivity != null)
             {
@@ -162,7 +171,7 @@ namespace ActivityManagementApp.Services
 
                 targetActivity.ActivityDetailTitle = inputActivityLogs.ActivityDetailTitle;
                 targetActivity.ActivityDetail = inputActivityLogs.ActivityDetail;
-                await _context.SaveChangesAsync();
+                await context.SaveChangesAsync();
                 return CustomValidationResult.Valid();
             }
 
@@ -171,9 +180,11 @@ namespace ActivityManagementApp.Services
 
         public async Task<CustomValidationResult> DeleteProgressActivityLogsAsync(int id)
         {
-            ActivityLogs? progressActivity = await _context.ActivityLogs.FindAsync(id);
+            using var context = await _contextFactory.CreateDbContextAsync();
 
-            ActivityLogs? latestActivity = await _context.ActivityLogs
+            ActivityLogs? progressActivity = await context.ActivityLogs.FindAsync(id);
+
+            ActivityLogs? latestActivity = await context.ActivityLogs
                                                     .AsNoTracking()
                                                     .FirstOrDefaultAsync(x => x.Id == id);
 
@@ -185,8 +196,8 @@ namespace ActivityManagementApp.Services
                     return result;
                 }
 
-                _context.ActivityLogs.Remove(progressActivity);
-                await _context.SaveChangesAsync();
+                context.ActivityLogs.Remove(progressActivity);
+                await context.SaveChangesAsync();
 
                 return result;
             }
