@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Identity;
 using SendGrid;
 using SendGrid.Helpers.Mail;
-using System.Net.Mail;
 
 namespace ActivityManagementApp.Services;
 

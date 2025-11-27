@@ -6,16 +6,18 @@ namespace ActivityManagementApp.Services
 {
     public class InitialCategoryRegistrationService
     {
-        private readonly ApplicationDbContext _db;
+        private readonly IDbContextFactory<ApplicationDbContext> _contextFactory;
 
-        public InitialCategoryRegistrationService(ApplicationDbContext db)
+        public InitialCategoryRegistrationService(IDbContextFactory<ApplicationDbContext> contextFactory)
         {
-            _db = db;
+            _contextFactory = contextFactory;
         }
 
         public async Task CreateForUserAsync(string userId)
         {
-            if (await _db.CategoryTypeMaster.AnyAsync(x => x.UserId == userId))
+            using var context = await _contextFactory.CreateDbContextAsync();
+
+            if (await context.CategoryTypeMaster.AnyAsync(x => x.UserId == userId))
                 return;
 
             int typeOrder = 1;
@@ -31,8 +33,8 @@ namespace ActivityManagementApp.Services
                     UserId = userId
                 };
 
-                _db.CategoryTypeMaster.Add(type);
-                await _db.SaveChangesAsync();
+                context.CategoryTypeMaster.Add(type);
+                await context.SaveChangesAsync();
 
                 foreach (var name in group.Categories)
                 {
@@ -43,10 +45,10 @@ namespace ActivityManagementApp.Services
                         CategoryTypeMasterId = type.Id,
                         SortOrder = categoryOrder++
                     };
-                    _db.CategoryMaster.Add(cat);
+                    context.CategoryMaster.Add(cat);
                 }
 
-                await _db.SaveChangesAsync();
+                await context.SaveChangesAsync();
             }
         }
     }
