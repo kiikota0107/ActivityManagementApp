@@ -8,6 +8,7 @@
 @inject ActivityInputService _activityInputService
 @inject FindMasterServices _findMasterServices
 @inject TimeZoneService _timeZoneService
+@inject IJSRuntime JS
 @attribute [Authorize]
 
 <PageTitle>入力画面</PageTitle>
@@ -247,6 +248,9 @@
     private async Task DeleteProgressActivityLogsAsync()
     {
         if (_activityLog == null) return;
+        bool confirm = await JS.InvokeAsync<bool>("confirm","進行中のタスクを削除しますか？");
+
+        if (!confirm) return;
         var result = await _activityInputService.DeleteProgressActivityLogsAsync(_activityLog.Id);
 
         if (!result.IsValid)
