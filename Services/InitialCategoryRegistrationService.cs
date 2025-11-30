@@ -34,7 +34,6 @@ namespace ActivityManagementApp.Services
                 };
 
                 context.CategoryTypeMaster.Add(type);
-                await context.SaveChangesAsync();
 
                 foreach (var name in group.Categories)
                 {
@@ -47,9 +46,9 @@ namespace ActivityManagementApp.Services
                     };
                     context.CategoryMaster.Add(cat);
                 }
-
-                await context.SaveChangesAsync();
             }
+
+            await context.SaveChangesAsync();
         }
     }
 }

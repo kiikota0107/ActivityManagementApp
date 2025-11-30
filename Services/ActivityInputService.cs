@@ -79,6 +79,7 @@ namespace ActivityManagementApp.Services
 
             ActivityLogs? progressActivity = await context.ActivityLogs.FindAsync(activityLogsInput.Id);
 
+            /// バリデーション用の最新レコードを追跡なしで取得
             ActivityLogs? latestActivity = await context.ActivityLogs
                                                     .AsNoTracking()
                                                     .FirstOrDefaultAsync(x => x.Id == activityLogsInput.Id);
@@ -108,6 +109,7 @@ namespace ActivityManagementApp.Services
 
             ActivityLogs? progressActivity = await context.ActivityLogs.FindAsync(activityLogsInput.Id);
 
+            /// バリデーション用の最新レコードを追跡なしで取得
             ActivityLogs? latestActivity = await context.ActivityLogs
                                                     .AsNoTracking()
                                                     .FirstOrDefaultAsync(x => x.Id == activityLogsInput.Id);
@@ -184,6 +186,7 @@ namespace ActivityManagementApp.Services
 
             ActivityLogs? progressActivity = await context.ActivityLogs.FindAsync(id);
 
+            /// バリデーション用の最新レコードを追跡なしで取得
             ActivityLogs? latestActivity = await context.ActivityLogs
                                                     .AsNoTracking()
                                                     .FirstOrDefaultAsync(x => x.Id == id);
