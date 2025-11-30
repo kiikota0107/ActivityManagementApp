@@ -42,8 +42,7 @@ namespace ActivityManagementApp.Services
         {
             using var context = await _contextFactory.CreateDbContextAsync();
 
-            var entity = await context.CategoryTypeMaster
-                                        .FirstOrDefaultAsync(x => x.Id == input.Id);
+            var entity = await context.CategoryTypeMaster.FindAsync(input.Id);
 
             if (entity == null) return CustomValidationResult.InValid("更新対象のレコードが見つかりませんでした。");
 
@@ -76,7 +75,6 @@ namespace ActivityManagementApp.Services
             if (hasChildren) return CustomValidationResult.InValid("このカテゴリタイプは使用されているため削除できません。");
 
             context.CategoryTypeMaster.Remove(entity);
-            await context.SaveChangesAsync();
 
             var list = await context.CategoryTypeMaster
                 .Where(x => x.UserId == userId)
@@ -150,8 +148,7 @@ namespace ActivityManagementApp.Services
         {
             using var context = await _contextFactory.CreateDbContextAsync();
 
-            var entity = await context.CategoryMaster
-                                        .FirstOrDefaultAsync(x => x.Id == input.Id);
+            var entity = await context.CategoryMaster.FindAsync(input.Id);
 
             if (entity == null) return CustomValidationResult.InValid("更新対象のレコードが見つかりませんでした。");
 
@@ -191,7 +188,6 @@ namespace ActivityManagementApp.Services
             }
 
             context.CategoryMaster.Remove(entity);
-            await context.SaveChangesAsync();
 
             var list = await context.CategoryMaster
                 .Where(x => x.UserId == userId)
