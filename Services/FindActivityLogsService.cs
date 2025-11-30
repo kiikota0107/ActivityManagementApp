@@ -46,7 +46,7 @@ namespace ActivityManagementApp.Services
             return activityLogs;
         }
 
-        public async Task<List<ActivityLogs>> FindActivityLogsByDatgetDateAsync(DateTime targetDate)
+        public async Task<List<ActivityLogs>> FindActivityLogsByTargetDateAsync(DateTime targetDate)
         {
             using var context = await _contextFactory.CreateDbContextAsync();
 
@@ -82,7 +82,7 @@ namespace ActivityManagementApp.Services
                                                 .ToListAsync();
 
                 activityLogs.AddRange(demoLogs);
-                activityLogs.OrderBy(x => x.StartDateTime);
+                activityLogs = activityLogs.OrderBy(x => x.StartDateTime).ToList();
             }
 
             return activityLogs;

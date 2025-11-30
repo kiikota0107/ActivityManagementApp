@@ -107,7 +107,7 @@
 
     private async Task LoadLogsAsync()
     {
-        _activityLogs = await _findActivityLogsService.FindActivityLogsByDatgetDateAsync(targetDate);
+        _activityLogs = await _findActivityLogsService.FindActivityLogsByTargetDateAsync(targetDate);
         CalcSumTime();
     }
 
