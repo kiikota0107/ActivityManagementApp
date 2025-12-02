@@ -165,19 +165,19 @@ namespace ActivityManagementApp.Services
 
             ActivityLogs? targetActivity = await context.ActivityLogs.FindAsync(inputActivityLogs.Id);
 
-            if(targetActivity != null)
-            {
-                var userId = await _userService.GetUserIdAsync();
+            if(targetActivity == null) return CustomValidationResult.InValid("更新対象のレコードが見つかりませんでした。");
 
-                if (userId != targetActivity.UserId) return CustomValidationResult.InValid("デモデータのため、更新できません");
+            var userId = await _userService.GetUserIdAsync();
 
-                targetActivity.ActivityDetailTitle = inputActivityLogs.ActivityDetailTitle;
-                targetActivity.ActivityDetail = inputActivityLogs.ActivityDetail;
-                await context.SaveChangesAsync();
-                return CustomValidationResult.Valid();
-            }
+            var result = CommonValidator.ValidateUserIsOwner(targetActivity.UserId, userId ?? "");
 
-            return CustomValidationResult.InValid("更新対象のレコードが見つかりませんでした。");
+            if (!result.IsValid) return CustomValidationResult.InValid(result.ErrorMessage);
+
+            targetActivity.ActivityDetailTitle = inputActivityLogs.ActivityDetailTitle;
+            targetActivity.ActivityDetail = inputActivityLogs.ActivityDetail;
+
+            await context.SaveChangesAsync();
+            return CustomValidationResult.Valid();
         }
 
         public async Task<CustomValidationResult> DeleteProgressActivityLogsAsync(int id)
