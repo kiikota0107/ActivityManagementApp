@@ -1,3 +1,4 @@
+using Serilog;
 using ActivityManagementApp.Components;
 using ActivityManagementApp.Components.Account;
 using ActivityManagementApp.Data;
@@ -72,6 +73,13 @@ builder.Services.AddIdentityCore<ApplicationUser>(options =>
 
 builder.Services.AddTransient<IEmailSender, SendGridEmailSender>();
 builder.Services.AddTransient<IEmailSender<ApplicationUser>, IdentityEmailSenderAdapter>();
+
+Log.Logger = new LoggerConfiguration()
+    .WriteTo.File("Logs/app.log", rollingInterval: RollingInterval.Day)
+    .CreateLogger();
+
+builder.Host.UseSerilog();
+
 
 builder.Services.AddHttpClient();
 
