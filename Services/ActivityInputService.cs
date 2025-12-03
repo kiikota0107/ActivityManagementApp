@@ -62,7 +62,6 @@ namespace ActivityManagementApp.Services
             }
 
             var newActivityLogs = new ActivityLogs();
-            var jst = TimeZoneInfo.FindSystemTimeZoneById("Asia/Tokyo");
             newActivityLogs.StartDateTime = _timeZoneService.NowJst;
             newActivityLogs.CategoryMasterId = categoryMasterId;
             newActivityLogs.UserId = userId;
@@ -122,7 +121,6 @@ namespace ActivityManagementApp.Services
                     return result;
                 }
 
-                var jst = TimeZoneInfo.FindSystemTimeZoneById("Asia/Tokyo");
                 progressActivity.EndDateTime = _timeZoneService.NowJst;
 
                 if (progressActivity.StartDateTime.Date != progressActivity.EndDateTime.Date)
@@ -137,17 +135,17 @@ namespace ActivityManagementApp.Services
                     newDaysActivity.EndDateTime = _timeZoneService.NowJst;
                     newDaysActivity.UserId = progressActivity.UserId;
 
-                    string customFormatStartTimeForNewDays = newDaysActivity.StartDateTime.ToShortTimeString();
-                    string customFormatEndTimeForNewDays = newDaysActivity.EndDateTime.ToShortTimeString();
-                    TimeSpan diffForNewDays = DateTime.Parse(customFormatEndTimeForNewDays) - DateTime.Parse(customFormatStartTimeForNewDays);
-                    newDaysActivity.PassingRoundMinutes = Math.Round(diffForNewDays.TotalMinutes);
+                    newDaysActivity.PassingRoundMinutes = CalcPassingRoundMinutes(
+                                                                newDaysActivity.StartDateTime,
+                                                                newDaysActivity.EndDateTime);
+
                     context.ActivityLogs.Add(newDaysActivity);
                 }
 
-                string customFormatStartTime = progressActivity.StartDateTime.ToShortTimeString();
-                string customFormatEndTime = progressActivity.EndDateTime.ToShortTimeString();
-                TimeSpan diff = DateTime.Parse(customFormatEndTime) - DateTime.Parse(customFormatStartTime);
-                progressActivity.PassingRoundMinutes = Math.Round(diff.TotalMinutes);
+                progressActivity.PassingRoundMinutes = CalcPassingRoundMinutes(
+                                                            progressActivity.StartDateTime,
+                                                            progressActivity.EndDateTime);
+
                 progressActivity.ActivityDetailTitle = activityLogsInput.ActivityDetailTitle;
                 progressActivity.ActivityDetail = activityLogsInput.ActivityDetail;
 
@@ -206,6 +204,14 @@ namespace ActivityManagementApp.Services
             }
 
             return CustomValidationResult.InValid("対象のレコードが見つかりませんでした。");
+        }
+
+        private double CalcPassingRoundMinutes(DateTime startDateTime, DateTime endDateTime)
+        {
+            string customFormatStartTime = startDateTime.ToShortTimeString();
+            string customFormatEndTime = endDateTime.ToShortTimeString();
+            TimeSpan diff = DateTime.Parse(customFormatEndTime) - DateTime.Parse(customFormatStartTime);
+            return Math.Round(diff.TotalMinutes);
         }
     }
 }
