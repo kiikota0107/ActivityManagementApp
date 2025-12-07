@@ -55,7 +55,7 @@
 
     private bool IsSqlSafe(string sql)
     {
-        var prohibited = new[] { "DROP", "ALTER", "TRUNCATE", "CREATE", "ATTACH", "DETACH" };
+        var prohibited = new[] { "DROP", "TRUNCATE", "CREATE", "ATTACH", "DETACH" };
         return !prohibited.Any(p => sql.ToUpper().Contains(p));
     }
 
