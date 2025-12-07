@@ -40,6 +40,13 @@
         }
     </div>
 
+    <!-- 制限アプリ許可フラグ -->
+    <div class="mb-3">
+        <label class="form-label">制限アプリ許可フラグ</label>
+        <InputCheckbox @bind-Value="Model.SkipAppLockOnActiveFlg"
+                            class="form-check-input"></InputCheckbox>
+    </div>
+
     <!-- ボタン -->
     <div class="d-flex gap-2">
         <button type="submit" class="btn btn-primary">保存</button>
