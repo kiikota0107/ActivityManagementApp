@@ -11,4 +11,5 @@ public class CategoryEditViewModel
     public int CategoryTypeMasterId { get; set; }
 
     public int SortOrder { get; set; }
+    public bool SkipAppLockOnActiveFlg { get; set; }
 }

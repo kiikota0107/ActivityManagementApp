@@ -160,6 +160,7 @@ namespace ActivityManagementApp.Services
             entity.CategoryName = input.CategoryName;
             entity.CategoryTypeMasterId = input.CategoryTypeMasterId;
             entity.SortOrder = input.SortOrder;
+            entity.SkipAppLockOnActiveFlg = input.SkipAppLockOnActiveFlg;
 
             await context.SaveChangesAsync();
             return CustomValidationResult.Valid();
