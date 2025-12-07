@@ -11,5 +11,6 @@ namespace ActivityManagementApp.Models
         public int CategoryTypeMasterId { get; set; }
         public CategoryTypeMaster CategoryTypeMaster { get; set; } = default!;
         public string UserId { get; set; } = default!;
+        public bool SkipAppLockOnActiveFlg { get; set; }
     }
 }
