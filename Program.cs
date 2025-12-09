@@ -32,6 +32,8 @@ builder.Services.AddScoped<FindActivityLogsService>();
 
 builder.Services.AddScoped<CategorySettingsService>();
 
+builder.Services.AddScoped<DevicePairingService>();
+
 builder.Services.AddCascadingAuthenticationState();
 
 builder.Services.AddScoped<IdentityUserAccessor>();

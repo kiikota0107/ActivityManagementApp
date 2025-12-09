@@ -10,7 +10,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<CategoryMaster> CategoryMaster { get; set; }
     public DbSet<CategoryTypeMaster> CategoryTypeMaster { get; set; }
     public DbSet<DevicePairingCode> DevicePairingCodes { get; set; }
-    public DbSet<DevicePairingCode> DeviceTokens { get; set; }
+    public DbSet<DeviceToken> DeviceToken { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
