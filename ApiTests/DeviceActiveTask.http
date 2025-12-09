@@ -1,0 +1,5 @@
+POST https://localhost:7201/api/device/pair/verify
+Authorization: Bearer 8zpr8F6YUUKebXmjfenSGA==
+
+GET https://localhost:7201/api/device/pair/active-task
+Authorization: Bearer 8zpr8F6YUUKebXmjfenSGA==

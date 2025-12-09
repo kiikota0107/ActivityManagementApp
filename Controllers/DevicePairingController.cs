@@ -10,9 +10,14 @@ namespace ActivityManagementApp.Controllers
     {
         private readonly DevicePairingService _pairingService;
 
-        public DevicePairingController(DevicePairingService devicePairingService)
+        private readonly DeviceActiveTaskService _activeTaskService;
+
+        public DevicePairingController(
+            DevicePairingService devicePairingService,
+            DeviceActiveTaskService activeTaskService)
         {
             _pairingService = devicePairingService;
+            _activeTaskService = activeTaskService;
         }
 
         [HttpPost("activate")]
@@ -46,6 +51,29 @@ namespace ActivityManagementApp.Controllers
                 return Unauthorized(new { error = result.ErrorMessage });
 
             return Ok(new { userId = result.UserId });
+        }
+
+        [HttpGet("active-task")]
+        public async Task<IActionResult> GetActiveTask()
+        {
+            if (!Request.Headers.TryGetValue("Authorizaiton", out var authHeader))
+                return Unauthorized(new { error = "Missing Authorization header." });
+
+            var token = authHeader.ToString()
+                .Replace("Beare ", "", StringComparison.OrdinalIgnoreCase)
+                .Trim();
+
+            if (string.IsNullOrWhiteSpace(token))
+                return Unauthorized(new { error = "InValid Authorization header." });
+
+            var verify = await _pairingService.VerifyTokenAsync(token);
+
+            if (!verify.IsSuccess)
+                return Unauthorized(new { error = verify.ErrorMessage });
+
+            var result = await _activeTaskService.GetActiveTaskAsync(verify.UserId!);
+
+            return Ok(result);
         }
     }
 }

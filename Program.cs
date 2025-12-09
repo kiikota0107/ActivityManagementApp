@@ -48,6 +48,10 @@ builder.Services.AddScoped<InitialCategoryRegistrationService>();
 
 builder.Services.AddScoped<TimeZoneService>();
 
+builder.Services.AddScoped<DevicePairingService>();
+
+builder.Services.AddScoped<DeviceActiveTaskService>();
+
 builder.Services.AddScoped<ActivityLogValidator>();
 
 builder.Services.AddAuthentication(options =>
