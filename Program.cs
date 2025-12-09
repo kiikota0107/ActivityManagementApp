@@ -32,6 +32,8 @@ builder.Services.AddScoped<FindActivityLogsService>();
 
 builder.Services.AddScoped<CategorySettingsService>();
 
+builder.Services.AddScoped<DevicePairingService>();
+
 builder.Services.AddCascadingAuthenticationState();
 
 builder.Services.AddScoped<IdentityUserAccessor>();
@@ -45,6 +47,10 @@ builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<InitialCategoryRegistrationService>();
 
 builder.Services.AddScoped<TimeZoneService>();
+
+builder.Services.AddScoped<DevicePairingService>();
+
+builder.Services.AddScoped<DeviceActiveTaskService>();
 
 builder.Services.AddScoped<ActivityLogValidator>();
 

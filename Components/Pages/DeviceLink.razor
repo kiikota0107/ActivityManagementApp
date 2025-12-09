@@ -1,0 +1,30 @@
+﻿@page "/device-link"
+@rendermode InteractiveServer
+@using ActivityManagementApp.Services
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+
+@inject DevicePairingService PairingService
+
+<h3>デバイスペアリングコード発行</h3>
+
+<button class="btn btn-primary" @onclick="GenerateCode">
+    ペアリングコードを生成
+</button>
+
+@if (!string.IsNullOrEmpty(generatedCode))
+{
+    <div class="alert alert-info mt-3">
+        発行コード： <strong>@generatedCode</strong>
+    </div>
+}
+
+@code {
+    private string? generatedCode;
+
+    private async Task GenerateCode()
+    {
+        var record = await PairingService.CreatePairingCodeAsync();
+        generatedCode = record.Code;
+    }
+}

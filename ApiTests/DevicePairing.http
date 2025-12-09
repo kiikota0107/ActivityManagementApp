@@ -1,0 +1,7 @@
+﻿POST https://localhost:7201/api/device/pair/activate
+Content-Type: application/json
+
+{
+  "code": "4TNR-JCOF",
+  "deviceName": "TestDevice"
+}
