@@ -113,5 +113,21 @@ namespace ActivityManagementApp.Services
             var bytes = RandomNumberGenerator.GetBytes(32);
             return Convert.ToBase64String(bytes);
         }
+
+        public async Task<VerifyTokenResult> VerifyTokenAsync(string token)
+        {
+            using var context = await _contextFactory.CreateDbContextAsync();
+
+            var record = await context.DeviceToken
+                .FirstOrDefaultAsync(x => x.Token == token);
+
+            if (record == null)
+                return VerifyTokenResult.Fail("Invalid token.");
+
+            if (record.IsRevoked)
+                return VerifyTokenResult.Fail("Token revoked.");
+
+            return VerifyTokenResult.Success(record.UserId);
+        }
     }
 }
