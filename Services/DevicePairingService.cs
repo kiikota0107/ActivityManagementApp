@@ -1,8 +1,9 @@
-﻿using ActivityManagementApp.Data;
-using ActivityManagementApp.Models;
-using Microsoft.EntityFrameworkCore;
-using System.Security.Cryptography;
+﻿using System.Security.Cryptography;
 using System.Text;
+using Microsoft.EntityFrameworkCore;
+using ActivityManagementApp.Data;
+using ActivityManagementApp.Models;
+using ActivityManagementApp.Models.Api;
 
 namespace ActivityManagementApp.Services
 {
@@ -64,13 +65,53 @@ namespace ActivityManagementApp.Services
                 DeviceName = deviceName,
                 CreatedAt = now,
                 ExpiresAt = now.AddMinutes(10),
-                IsUserd = false
+                IsUsed = false
             };
 
             context.DevicePairingCodes.Add(record);
             await context.SaveChangesAsync();
 
             return record;
+        }
+
+        public async Task<ActivateResult> ActivateAsync(ActivateRequest request)
+        {
+            using var context = await _contextFactory.CreateDbContextAsync();
+
+            var code = await context.DevicePairingCodes.FirstOrDefaultAsync(x => x.Code == request.Code);
+
+            if (code == null) return ActivateResult.Fail("Invalid code.");
+
+            if (code.ExpiresAt < _timeZoneService.NowJst)
+                return ActivateResult.Fail("Code expired.");
+
+            if (code.IsUsed)
+                return ActivateResult.Fail("Code already used.");
+
+            var token = GenerateSecureToken();
+
+            context.DeviceToken.Add(
+                new DeviceToken
+                {
+                    Token = token,
+                    UserId = code.UserId,
+                    DeviceName = request.DeviceName,
+                    CreatedAt = _timeZoneService.NowJst,
+                    IsRevoked = false
+                }
+            );
+
+            code.IsUsed = true;
+
+            await context.SaveChangesAsync();
+
+            return ActivateResult.Success(token);
+        }
+
+        private string GenerateSecureToken()
+        {
+            var bytes = RandomNumberGenerator.GetBytes(32);
+            return Convert.ToBase64String(bytes);
         }
     }
 }
