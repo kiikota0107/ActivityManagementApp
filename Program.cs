@@ -81,11 +81,13 @@ builder.Services.AddTransient<IEmailSender, SendGridEmailSender>();
 builder.Services.AddTransient<IEmailSender<ApplicationUser>, IdentityEmailSenderAdapter>();
 
 Log.Logger = new LoggerConfiguration()
+    .MinimumLevel.Debug()
+    .WriteTo.Console()
     .WriteTo.File("Logs/app.log", rollingInterval: RollingInterval.Day)
+    .Enrich.FromLogContext()
     .CreateLogger();
 
 builder.Host.UseSerilog();
-
 
 builder.Services.AddHttpClient();
 
@@ -150,5 +152,7 @@ if (app.Environment.IsDevelopment())
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     db.Database.Migrate();
 }
+
+app.UseSerilogRequestLogging();
 
 app.Run();
