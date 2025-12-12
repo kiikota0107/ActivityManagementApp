@@ -56,7 +56,7 @@ namespace ActivityManagementApp.Controllers
         [HttpGet("active-task")]
         public async Task<IActionResult> GetActiveTask()
         {
-            if (!Request.Headers.TryGetValue("Authorizaition", out var authHeader))
+            if (!Request.Headers.TryGetValue("Authorization", out var authHeader))
                 return Unauthorized(new { error = "Missing Authorization header." });
 
             var token = authHeader.ToString()
