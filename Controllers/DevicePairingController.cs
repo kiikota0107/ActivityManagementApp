@@ -56,11 +56,11 @@ namespace ActivityManagementApp.Controllers
         [HttpGet("active-task")]
         public async Task<IActionResult> GetActiveTask()
         {
-            if (!Request.Headers.TryGetValue("Authorizaiton", out var authHeader))
+            if (!Request.Headers.TryGetValue("Authorizaition", out var authHeader))
                 return Unauthorized(new { error = "Missing Authorization header." });
 
             var token = authHeader.ToString()
-                .Replace("Beare ", "", StringComparison.OrdinalIgnoreCase)
+                .Replace("Bearer ", "", StringComparison.OrdinalIgnoreCase)
                 .Trim();
 
             if (string.IsNullOrWhiteSpace(token))
